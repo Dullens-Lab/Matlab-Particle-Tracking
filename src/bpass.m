@@ -115,7 +115,7 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img, hpass, lpass, baseline,
         end
 
         if lpass ~= 1 % Dont waste my time with good images!
-            lpass_x      = - lpass : lpass 
+            lpass_x      = - lpass : lpass ;
             lpass_kernel = normalize( exp( -( lpass_x / ( 2 * lpass ) ) .^2 ) ) ;
             img_lpass    = conv2( img_out, lpass_kernel, 'same' ) ;
             img_lpass    = conv2( img_lpass, lpass_kernel', 'same' ) ;
@@ -129,7 +129,6 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img, hpass, lpass, baseline,
         img_base = img_out ;
         img_base( img_base < baseline ) = 0 ; 
         img_out = img_base ;
-        disp('hello')
     end
 
     if display == true

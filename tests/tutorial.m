@@ -9,7 +9,7 @@ close all ; clear all ;
 
 addpath( '../src/', '../img/' )
 
-image_array = double( imread( '../img/tutorial_2048.tif' ) ) ;
+image_array = double( imread( '../img/tutorial_150.tif' ) ) ;
 
 % image_array = image_array( 1 : 512, 1 : 512 ) ;
 
@@ -32,7 +32,7 @@ image_array = double( imread( '../img/tutorial_2048.tif' ) ) ;
 
 excl_dia = 15 ;
 excl_rad = floor( excl_dia / 2 ) ;
-baseline = 40 ;
+baseline = 60 ;
 
 loop = 1 ;
 
@@ -43,7 +43,7 @@ time_cntrd = zeros( loop, 1 ) ;
 for n = 1 : loop
 
     tic
-    filtered_image = bpass( image_array, true, false, baseline ) ;
+    filtered_image = bpass( image_array, true, 2, baseline, true ) ;
     time_bpass( n ) = toc;
     
     image_array_fig = figure ; colormap('gray'), imagesc( image_array ) ; axis square ;
@@ -65,17 +65,17 @@ total = time_bpass + time_pkfnd + time_cntrd
 size( particles )
 
 
-% for p = 1 : length( particles( :, 1 ) )
-%     x = particles( p, 1 ) ;
-%     y = particles( p, 2 ) ;
-%     line( [ x - excl_rad, x + excl_rad ], [ y, y ], 'Color','green' )
-%     line( [ x, x ], [ y - excl_rad, y + excl_rad ], 'Color','green' )
-%     line( [ x - excl_rad, x - excl_rad ], [ y - excl_rad, y + excl_rad ], 'Color','green' )
-%     line( [ x + excl_rad, x + excl_rad ], [ y - excl_rad, y + excl_rad ], 'Color','green' )
-%     line( [ x - excl_rad, x + excl_rad ], [ y - excl_rad, y - excl_rad ], 'Color','green' )
-%     line( [ x + excl_rad, x - excl_rad ], [ y + excl_rad, y + excl_rad ], 'Color','green' )
-% end
+for p = 1 : length( particles( :, 1 ) )
+    x = particles( p, 1 ) ;
+    y = particles( p, 2 ) ;
+    line( [ x - excl_rad, x + excl_rad ], [ y, y ], 'Color','green' )
+    line( [ x, x ], [ y - excl_rad, y + excl_rad ], 'Color','green' )
+    line( [ x - excl_rad, x - excl_rad ], [ y - excl_rad, y + excl_rad ], 'Color','green' )
+    line( [ x + excl_rad, x + excl_rad ], [ y - excl_rad, y + excl_rad ], 'Color','green' )
+    line( [ x - excl_rad, x + excl_rad ], [ y - excl_rad, y - excl_rad ], 'Color','green' )
+    line( [ x + excl_rad, x - excl_rad ], [ y + excl_rad, y + excl_rad ], 'Color','green' )
+end
 
-% crc = viscircles( [ particles( :, 1 ), particles( :, 2 ) ], particles( :, 4 ) / 2, 'Color', 'g', 'EnhanceVisibility', false, 'LineWidth', 1 ) ;
+crc = viscircles( [ particles( :, 1 ), particles( :, 2 ) ], particles( :, 4 ) / 2, 'Color', 'g', 'EnhanceVisibility', false, 'LineWidth', 1 ) ;
 
-% figure ; plot( particles(:,4), particles(:,3), 'o') 
+figure ; plot( particles(:,4), particles(:,3), 'o') 
