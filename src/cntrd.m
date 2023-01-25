@@ -70,7 +70,7 @@ Reformated to meet commenting and nomenclecture standards. AC
 Removed interactive option. AC
 Changed excl_rad such that we consider n pixels from the given peak where 2n + 1 is the input excl_dia.
 Removed filtering image edges of peaks and this is already happening in pkfnd(). AC
-Changed radius of giration calc. I dont trust rg = ( sum( tmp .* dst2, 'all' ) / norm ) ; since the applied mask influences
+Changed radius of giration calc. I dont trust rg = ( sum( roi .* dst2, 'all' ) / norm ) ; since the applied mask influences
 the estimated radius.
 Changed the mask such that it is a pixellated circle of diameter = excl_dia rather than excl_dia - 1.
 Added option to include mask or not.
@@ -83,22 +83,22 @@ Added option to include mask or not.
     
     % cent_px = excl_rad + 1 ;
 
-    % circ_msk_inv = zeros( excl_dia ) ;
+    % msk_inv = zeros( excl_dia ) ;
     
     % for i = 1 : excl_dia
-    %     circ_msk_inv( i, : ) = sqrt( ( i - cent_px ) ^2 + msk_range ) ;
+    %     msk_inv( i, : ) = sqrt( ( i - cent_px ) ^2 + msk_range ) ;
     % end
 
-    % ind = find( circ_msk_inv <= excl_rad ) ;
+    % ind = find( msk_inv <= excl_rad ) ;
 
-    % circ_msk_binary = zeros( excl_dia ) ;
+    % msk_binary = zeros( excl_dia ) ;
 
-    % circ_msk_binary( ind ) = 1.0 ;
+    % msk_binary( ind ) = 1.0 ;
 
-    % dst2 = circ_msk_binary .* ( circ_msk_inv .^2 ) ;
+    % dst2 = msk_binary .* ( msk_inv .^2 ) ;
 
 %}
-function particles = cntrd( img, est_pks, excl_dia, apply_mask )
+function cntrds = cntrd( img, est_pks, excl_dia, apply_mask )
 
     if isa( img, 'double' ) ~= 1, img = double( img ) ; end
 
@@ -118,19 +118,15 @@ function particles = cntrd( img, est_pks, excl_dia, apply_mask )
     excl_rad = floor( excl_dia / 2 ) ;
 
     if apply_mask == true
-
-        cent_px = excl_rad + 1 ;
-        % Create mask - window around trial location over which to calculate the centroid
-        circ_msk_binary = zeros( excl_dia ) ;  
-        circ_msk_binary( cent_px, cent_px ) = 1 ;    
-        circ_msk_binary = bwdist( circ_msk_binary );
-        circ_msk_binary = circ_msk_binary <= excl_rad;
-    
+        % Create a circular mask around trial
+        cent_px     = excl_rad + 1 ;
+        msk_binary  = zeros( excl_dia ) ;  
+        msk_binary( cent_px, cent_px ) = 1 ;    
+        msk_binary  = bwdist( msk_binary );
+        msk_binary  = msk_binary <= excl_rad;
     else
-        circ_msk_binary = 1 ;
+        msk_binary  = 1 ;
     end
-    
-    % figure ; imagesc( circ_msk_binary )
 
     msk_ind_x = zeros( excl_dia ) ;
 
@@ -140,26 +136,19 @@ function particles = cntrd( img, est_pks, excl_dia, apply_mask )
 
     [ est_pks_num, ~ ] = size( est_pks ) ;
 
-    particles = zeros( est_pks_num , 4 ) ;
+    cntrds = zeros( est_pks_num , 4 ) ;
 
-    % Loop through all of the candidate positions
     for n = 1 : est_pks_num
+        rows    = est_pks( n, 2 ) - excl_rad  : est_pks( n, 2 ) + excl_rad ;
+        cols    = est_pks( n, 1 ) - excl_rad  : est_pks( n, 1 ) + excl_rad ;
+        roi     = msk_binary .* img( rows, cols ) ;
+        tot_br  = sum( roi, 'all' ) ;
+
+        cntrd_x = est_pks( n, 1 ) + sum( roi .* msk_ind_x, 'all' ) / tot_br - excl_rad ;
+        cntrd_y = est_pks( n, 2 ) + sum( roi .* msk_ind_y, 'all' ) / tot_br - excl_rad ;
+        pk_val  = max( roi, [], 'all' ) ;
+        rad_gyr = 2 * sqrt( sum( roi .^2, 'all' ) / numel( roi ) / pk_val ) ; % Estimate of particles diameter based on radius of gyration
         
-        tmp = circ_msk_binary .* ... 
-                img( ( est_pks( n, 2 ) - excl_rad  : est_pks( n, 2 ) + excl_rad ), ...
-                     ( est_pks( n, 1 ) - excl_rad  : est_pks( n, 1 ) + excl_rad ) ) ;
-
-        tot_br = sum( tmp, 'all' ) ;
-
-        wght_ave_x = sum( tmp .* msk_ind_x, 'all' ) / tot_br - excl_rad ;
-
-        wght_ave_y = sum( tmp .* msk_ind_y, 'all' ) / tot_br - excl_rad ;
-
-        pk_val = max( tmp, [],'all' ) ;
-
-        % Calculate an estimate of the particles diameter based on radius of gyration
-        rad_gyr = 2 * sqrt( sum( tmp .^2, 'all' ) / numel( tmp ) / pk_val ) ;
-        
-        particles( n, : ) = [ est_pks( n, 1 ) + wght_ave_x, est_pks( n, 2 ) + wght_ave_y, pk_val, rad_gyr ] ;
-                
+        cntrds( n, : ) = [ cntrd_x, cntrd_y, pk_val, rad_gyr ] ;
+     
     end
