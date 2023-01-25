@@ -92,7 +92,7 @@ picking parts of particles.
 
 %}
 
-function img_out = bpass( img, box_filter, gaus_filter, baseline, display )
+function [ img_gaus, img_box, img_out ] = bpass( img, box_filter, gaus_filter, baseline, display )
 
     if nargin < 4
         warning('No image filtering performed. Not enough arguments provided in bpass( img, box_filter, gaus_filter, baseline, display )')
@@ -145,7 +145,7 @@ function img_out = bpass( img, box_filter, gaus_filter, baseline, display )
 
     if display == true
 
-        fov = 512 ;
+        fov = 2048 ;
         figure_img = figure ; colormap( figure_img, 'gray') ; figure_hists = figure ;
 
         img_hist = @( x )  hist( x, min( x, [], 'all' ) : max( x, [], 'all' ) ) ;

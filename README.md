@@ -8,7 +8,7 @@ If you only want to use the code, download the repo your preferred way.
 
 ## Tutorial
 
-## Image Filtering, `bpass()`
+### Image Filtering, `bpass()`
 
 Three step filtering starting with a boxcar filter to remove long scale variation. Boxcar filtered image, 'img_box' is then filtered with a gaussian filter, to remove pixel noise. Finally, 'img_gaus', has any pixel values below 'baseline' set to zero. Any step can be skipped with a 'false' argument.
 
@@ -24,6 +24,12 @@ Three step filtering starting with a boxcar filter to remove long scale variatio
 
 `img_out` 2D array of filtered image pixel values.
 
+#### Example 
+
+`img = imread( '../img/tutorial_150.tif' ) ;`
+bpass( img, true, true, 80, true ) ;
+
+![This is an image](/img/img_box_2048.tiff)
 
 
 
