@@ -1,33 +1,21 @@
-
-% Three step filtering starting with a boxcar filter to remove long scale variation. 
-% Boxcar filtered image, 'img_box' is then filtered with a gaussian filter, to remove pixel noise.
-% Finally, 'img_gaus', has any pixel values below 'baseline' set to zero.
-% Any step can be skipped with a 'false' argument.
-
-% img_out = bpass( img, box_filter, gaus_filter, baseline )
-% img_out = bpass( img, box_filter, gaus_filter, baseline, display )
-
-% img:          'array' 2D array of image pixel values.
-
-% box_filter:   'bool' Set to 'true' for highpass filtering.
-%               Set to 'false' to skip boxcar filtering of the input image.
-
-% gaus_filter: 'int|bool' Characteristic length scale of noise in pixels.
-%               Set to 'true' to apply an appropriate gausian filter based on the input image.
-%               Or provide any positive integer for manual control of the gausian kernel. 
-%               Set to 'false' to skip gausian filtering of the input image.
-
-% baseline:     'int|bool' Reset any pixel values below 'baseline' to 0.
-%               Set to 'false' to skip. 
-%               An input of '0' will output the same result as 'false', but the code will scan the image for any values below 0.
-
-% returns:      'array' 2D array of filtered image pixel values.
-
-% Notes:        Performs a bandpass by convolving with an appropriate kernel. You can think of this as 
-%               a two part process. First, a lowpassed image is produced by convolving the original 
-%               with a gausian. Next, a second lowpassed image is produced by convolving the original 
-%               with a boxcar function. By subtracting the boxcar version from the gausian version, we
-%               are using the boxcar version to perform a highpass.
+%
+%Three step image manipulation starting with a high frequency pass filter to remove long scale variations. The high pass filtered image, `img_hpass` is then filtered with a low (gaussian) pass filter, to remove pixel noise. Finally, `img_lpass`, has any pixel values below `baseline` set to zero. Any step can be skipped with a `false` argument.
+%
+%   `img_out = bpass( img_in, hpass, lpass, baseline, display )`
+%
+%   `img_in` 2D array of image pixel values.
+%
+%   `hpass` Set to `true` for highpass filtering. Set to `false` to skip.
+%
+%   `lpass` Set to `true` to apply a gaussian filter with a strength calculated from the input image. Provide any positive integer for manual control of the gaussian kernel. Set to `false` to skip. For either auto or manual, if the strength of the filter is equal to 1 the image is assumed to be good enough amd gaussian filtering and will be skipped.
+%
+%   `baseline` Reset any pixel values below `baseline` to 0. Set to 'false' to skip.
+%
+%   `display` Plot the image and pixel distribution at each stage of the filtering. Set to `false` or leave blank to skip.
+%
+%   `img_out` 2D array of filtered image pixel values.
+%
+%`img_hpass` and `img_lpass` can be returned with `[ img_out, img_hpass ] = bpass()` and `[ img_out, ~, img_lpass ] = bpass()`, respectively.
 
 %{
 
@@ -36,7 +24,7 @@ Notes on convolution:
 JWM: Do a 2D convolution with the kernels in two steps each. It is
 possible to do the convolution in only one step per kernel with 
 
-  gaus_conv = conv2(gaus_kernel',gaus_kernel,image,'same');
+  lpass_conv = conv2(lpass_kernel',lpass_kernel,image,'same');
   boxcar_conv = conv2(box_kernel', box_kernel,image,'same');
 
 but for some reason, this is slow. The whole operation could be reduced
@@ -44,7 +32,7 @@ to a single step using the associative and distributive properties of
 convolution:
 
   filtered = conv2(image,...
-    gaus_kernel'*gaus_kernel - box_kernel'*box_kernel,...
+    lpass_kernel'*lpass_kernel - box_kernel'*box_kernel,...
     'same');
 
 But this is also comparatively slow (though inexplicably faster than the
@@ -92,10 +80,10 @@ picking parts of particles.
 
 %}
 
-function [ img_gaus, img_box, img_out ] = bpass( img, box_filter, gaus_filter, baseline, display )
+function [ img_out, img_hpass, img_lpass ] = bpass( img, hpass, lpass, baseline, display )
 
     if nargin < 4
-        warning('No image filtering performed. Not enough arguments provided in bpass( img, box_filter, gaus_filter, baseline, display )')
+        warning('No image filtering performed. Not enough arguments provided in bpass( img, hpass, lpass, baseline, display )')
         img_out = img ;
         return
     end
@@ -109,30 +97,30 @@ function [ img_gaus, img_box, img_out ] = bpass( img, box_filter, gaus_filter, b
     img         = scale2init8( img ) ;
     img_out     = img ;
 
-    if box_filter
+    if hpass
         box_kernel  = - ones( 3 ) / 9 ; box_kernel( 2, 2 ) = 8 / 9 ;
-        img_box     = conv2( img_out, box_kernel, 'same' ) ;
-        img_box     = scale2init8( img_box ) ;
-        img_out     = img_box ;
+        img_hpass     = conv2( img_out, box_kernel, 'same' ) ;
+        img_hpass     = scale2init8( img_hpass ) ;
+        img_out     = img_hpass ;
     end
 
-    if gaus_filter ~= false % NOT 0 or false
+    if lpass ~= false % NOT 0 or false
 
-        if islogical( gaus_filter )
+        if islogical( lpass )
             % Fast Noise Variance Estimation, see https://doi.org/10.1006/cviu.1996.0060
             [ img_rows, img_cols ] = size( img ) ;
 
-            gaus_sigma     = sum( abs( conv2( img_out, [ 1 -2 1 ; -2 4 -2 ; 1 -2 1 ] ) ), 'all'  ) ;
-            gaus_filter    = round( gaus_sigma * sqrt( .5 * pi ) / ( 6 * ( img_rows - 2 ) * ( img_cols - 2 ) ) )
+            lpass_sigma     = sum( abs( conv2( img_out, [ 1 -2 1 ; -2 4 -2 ; 1 -2 1 ] ) ), 'all'  ) ;
+            lpass    = round( lpass_sigma * sqrt( .5 * pi ) / ( 6 * ( img_rows - 2 ) * ( img_cols - 2 ) ) )
         end
 
-        if gaus_filter ~= 1 % Dont waste my time with good images!
-            gaus_x      = - gaus_filter : gaus_filter 
-            gaus_kernel = normalize( exp( -( gaus_x / ( 2 * gaus_filter ) ) .^2 ) ) ;
-            img_gaus    = conv2( img_out, gaus_kernel, 'same' ) ;
-            img_gaus    = conv2( img_gaus, gaus_kernel', 'same' ) ;
-            img_gaus    = scale2init8( img_gaus ) ;
-            img_out     = img_gaus ;
+        if lpass ~= 1 % Dont waste my time with good images!
+            lpass_x      = - lpass : lpass 
+            lpass_kernel = normalize( exp( -( lpass_x / ( 2 * lpass ) ) .^2 ) ) ;
+            img_lpass    = conv2( img_out, lpass_kernel, 'same' ) ;
+            img_lpass    = conv2( img_lpass, lpass_kernel', 'same' ) ;
+            img_lpass    = scale2init8( img_lpass ) ;
+            img_out     = img_lpass ;
         end
         
     end
@@ -141,6 +129,7 @@ function [ img_gaus, img_box, img_out ] = bpass( img, box_filter, gaus_filter, b
         img_base = img_out ;
         img_base( img_base < baseline ) = 0 ; 
         img_out = img_base ;
+        disp('hello')
     end
 
     if display == true
@@ -157,20 +146,20 @@ function [ img_gaus, img_box, img_out ] = bpass( img, box_filter, gaus_filter, b
         display_raw = subplot( 2, 2, 1, 'Parent', figure_img ) ; image( img( 1 : fov, 1 : fov ), 'Parent', display_raw) ;
         title( display_raw, 'Raw Image' ) ; set( display_raw, 'YTickLabel', [ ] ) ; set( display_raw, 'XTickLabel', [ ] ) ;
 
-        if box_filter
-            [ hist_box, x_hist ] = img_hist( img_box ) ;
+        if hpass
+            [ hist_box, x_hist ] = img_hist( img_hpass ) ;
             figure_hists ; semilogy1_box = semilogy( x_hist, sum( hist_box, 2 ), 'bo' ) ;
             set(semilogy1_box, 'DisplayName', 'Boxcar', 'MarkerFaceColor', 'b' ) ;
-            display_box = subplot( 2, 2, 2, 'Parent', figure_img ) ; imagesc( img_box( 1 : fov, 1 : fov ), 'Parent', display_box) ;
+            display_box = subplot( 2, 2, 2, 'Parent', figure_img ) ; imagesc( img_hpass( 1 : fov, 1 : fov ), 'Parent', display_box) ;
             title( display_box, 'Boxcar Filtered Image' ) ;set( display_box, 'YTickLabel', [ ] ) ; set( display_box, 'XTickLabel', [ ] ) ;
         end
 
-        if exist( 'img_gaus', 'var' )
-            [ hist_g, x_hist ] = img_hist( img_gaus ) ;
+        if exist( 'img_lpass', 'var' )
+            [ hist_g, x_hist ] = img_hist( img_lpass ) ;
             figure_hists ; semilogy1_g = semilogy( x_hist, sum( hist_g, 2 ), 'ro' ) ;
-            set( semilogy1_g, 'DisplayName', 'Gausian', 'MarkerFaceColor', 'r' ) ;
-            display_gaus = subplot( 2, 2, 3, 'Parent', figure_img ) ; image( img_gaus( 1 : fov, 1 : fov ), 'Parent', display_gaus) ;
-            title( display_gaus, 'Gaussian Filtered Image' ) ;set( display_gaus, 'YTickLabel', [ ] ) ; set( display_gaus, 'XTickLabel', [ ] ) ;
+            set( semilogy1_g, 'DisplayName', 'lpassian', 'MarkerFaceColor', 'r' ) ;
+            display_lpass = subplot( 2, 2, 3, 'Parent', figure_img ) ; image( img_lpass( 1 : fov, 1 : fov ), 'Parent', display_lpass) ;
+            title( display_lpass, 'gaussian Filtered Image' ) ;set( display_lpass, 'YTickLabel', [ ] ) ; set( display_lpass, 'XTickLabel', [ ] ) ;
 
         end
 

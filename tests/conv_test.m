@@ -12,15 +12,15 @@ gaussian_kernel = normalize(...
 
 for k = 1:n
     tic
-    img_gauss = conv2( img , gaussian_kernel, 'same' ) ;
-    img_gauss = conv2( img_gauss , gaussian_kernel', 'same' ) ;
+    img_lpasss = conv2( img , gaussian_kernel, 'same' ) ;
+    img_lpasss = conv2( img_lpasss , gaussian_kernel', 'same' ) ;
     two_step_man(k) = toc ;
 
 end
 
 for k = 1:n
     tic
-    img_gauss = conv2( gaussian_kernel', gaussian_kernel, img, 'same' ) ;
+    img_lpasss = conv2( gaussian_kernel', gaussian_kernel, img, 'same' ) ;
     one_step_man(k) = toc ;
 end
 
