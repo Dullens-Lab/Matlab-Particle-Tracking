@@ -122,7 +122,7 @@ function img_out = bpass( img, box_filter, gaus_filter, baseline, display )
             % Fast Noise Variance Estimation, see https://doi.org/10.1006/cviu.1996.0060
             [ img_rows, img_cols ] = size( img ) ;
 
-            gaus_sigma     = sum( abs( conv2( img, [ 1 -2 1 ; -2 4 -2 ; 1 -2 1 ] ) ), 'all'  ) ;
+            gaus_sigma     = sum( abs( conv2( img_out, [ 1 -2 1 ; -2 4 -2 ; 1 -2 1 ] ) ), 'all'  ) ;
             gaus_filter    = round( gaus_sigma * sqrt( .5 * pi ) / ( 6 * ( img_rows - 2 ) * ( img_cols - 2 ) ) ) ;
         end
 

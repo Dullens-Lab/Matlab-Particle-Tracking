@@ -14,27 +14,17 @@ Three step filtering starting with a boxcar filter to remove long scale variatio
 
 `img_out = bpass( img, box_filter, gaus_filter, baseline, display )`
 
-`img`:          'array' 2D array of image pixel values.
+`img` 2D array of image pixel values.
 
-`box_filter`:   'bool' Set to 'true' for highpass filtering.
-              Set to 'false' to skip boxcar filtering of the input image.
+`box_filter` Set to `true` for highpass filtering. Set to `false` to skip boxcar filtering of the input image.
 
-`gaus_filter`: 'int|bool' Characteristic length scale of noise in pixels.
-              Set to 'true' to apply an appropriate gausian filter based on the input image.
-              Or provide any positive integer for manual control of the gausian kernel. 
-              Set to 'false' to skip gausian filtering of the input image.
+`gaus_filter` Characteristic length scale of noise in pixels. Set to `true` to apply an appropriate gaussian filter based on the input image. Or provide any positive integer for manual control of the gaussian kernel. Set to `false` to skip gaussian filtering of the input image. For either auto or manual values equal to 1 the image is assumed to be good enough to not need gaussian filtering and will be skipped.
 
-`baseline`:     'int|bool' Reset any pixel values below 'baseline' to 0.
-              Set to 'false' to skip. 
-              An input of '0' will output the same result as 'false', but the code will scan the image for any values below 0.
+`baseline` Reset any pixel values below 'baseline' to 0.Set to 'false' to skip. An input of '0' will output the same result as 'false', but the code will scan the image for any values below 0.
 
-returns:      'array' 2D array of filtered image pixel values.
+`img_out` 2D array of filtered image pixel values.
 
-Notes:        Performs a bandpass by convolving with an appropriate kernel. You can think of this as 
-              a two part process. First, a lowpassed image is produced by convolving the original 
-              with a gausian. Next, a second lowpassed image is produced by convolving the original 
-              with a boxcar function. By subtracting the boxcar version from the gausian version, we
-              are using the boxcar version to perform a highpass.
+
 
 
 The Matlab Particle Tracking Code originally developed by Daniel Blair and Eric Dufresne, based on the IDL algorithms developed by David Grier, John Crocker and Eric Weeks.
