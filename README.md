@@ -28,7 +28,8 @@ Three step filtering starting with a boxcar filter to remove long scale variatio
 
 With an appropriate brightfield image, where the sample if focused to maximize the bright spot at it's centre but not saturating any pixels.
 
-![Ideal input image](/img/img_in_150.jpg)
+|![Ideal input image](/img/img_in_150.jpg)|
+|:--:|
 | <b>Image Credits - Fig.2 - 4K Mountains Wallpaper</b>|
 
 `img = imread( '../img/tutorial_150.tif' ) ;`
