@@ -29,14 +29,20 @@ Three step filtering starting with a boxcar filter to remove long scale variatio
 With an appropriate brightfield image, where the sample if focused to maximize the bright spot at it's centre but not saturating any pixels.
 
 |![Ideal input image](/img/img_in_150.jpg)|
-|:--:|
-| <b>Image Credits - Fig.2 - 4K Mountains Wallpaper</b>|
 
-`img = imread( '../img/tutorial_150.tif' ) ;`
-bpass( img, true, true, 80, true ) ;
+| Ideal brightfield image |
 
-![This is an image](/img/img_150.tiff)
-![This is an image](/img/img_box_2048.jpg)
+`img_in = imread( '../img/tutorial_150.tif' ) ;`
+`[img_gaus, img_box, img_out] = bpass( img, true, 2, 120, true ) ;`
+
+![Boxcar filtered image](/img/img_box_150.jpg)
+| Boxcar filtered image |
+
+![Boxcar then Gaussian filtered image](/img/img_gaus_150.jpg)
+| Boxcar then Gaussian filtered image |
+
+![Final output image](/img/img_out_150.jpg)
+| Final output image |
 
 
 
