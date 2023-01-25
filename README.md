@@ -20,7 +20,7 @@ Three step image manipulation starting with a high frequency pass filter to remo
 
 `lpass` Set to `true` to apply a gaussian filter with a strength calculated from the input image. Provide any positive integer for manual control of the gaussian kernel. Set to `false` to skip. For either auto or manual, if the strength of the filter is equal to 1 the image is assumed to be good enough amd gaussian filtering and will be skipped.
 
-`baseline` Reset any pixel values below `baseline` to 0. Set to 'false' to skip.
+`baseline` Resets any pixel values below `baseline` to 0. Set to 'false' to skip.
 
 `display` Plot the image and pixel distribution at each stage of the filtering. Set to `false` or leave blank to skip.
 
@@ -31,8 +31,19 @@ Three step image manipulation starting with a high frequency pass filter to remo
 
 ### Find peak pixels, `pkfnd()`
 
+Find particle positions in an image with pixel accuracy. The output here is expected to be an argument in `cntrd()`. Rarely would the output here be sufficient for analysis of particle dynamics.
 
+All non-zero pixels within the exclusion radius (`excl_dia / 2` ) of the image edges are eliminated. Checks each pixel and the 8 nearest neighbors to see which is brightest. Each remaining pixel is then checked to see if it is the brightest in a region of interest defined by `ecl_dia`. 
 
+`est_pks = pkfnd( img, threshold, excl_dia )`
+
+`img_in` 2D array of image pixel values. Ideally each colloid is represented by only a few non-zero pixels.
+   
+`threshold` Eliminates pixel values below `threshold`.
+   
+`excl_dia` Diameter, in pixels, over which to exclude all but the brightest pixel. Also excludes pixels within `excl_dia / 2` of image edges.
+
+`est_pks` N x 2 array containing, pixelated coordinates of local maxima.
 
 
 
