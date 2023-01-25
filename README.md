@@ -30,6 +30,7 @@ Three step filtering starting with a boxcar filter to remove long scale variatio
 bpass( img, true, true, 80, true ) ;
 
 ![This is an image](/img/img_box_2048.tiff)
+![This is an image](/img/img_box_2048.jpg)
 
 
 
