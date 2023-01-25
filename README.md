@@ -26,7 +26,13 @@ Three step image manipulation starting with a high frequency pass filter to remo
 
 `img_out` 2D array of filtered image pixel values.
 
-`img_hpass` and `img_lpass` can be returned with `[ img_out, img_hpass ] = bpass()` and `[ img_out, ~, img_lpass ] = bpass()`, respectively.
+`img_hpass` and `img_lpass` can be returned with 
+
+`[ img_out, img_hpass ] = bpass()` and 
+
+`[ img_out, ~, img_lpass ] = bpass()`, 
+
+respectively.
 
 
 ### Find peak pixels, `pkfnd()`
