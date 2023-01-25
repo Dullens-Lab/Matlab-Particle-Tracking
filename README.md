@@ -33,19 +33,20 @@ With an appropriate brightfield image, where the sample if focused to maximize t
 | Ideal brightfield image |
 
 `img_in = imread( '../img/tutorial_150.tif' ) ;`
+
 `[img_gaus, img_box, img_out] = bpass( img, true, 2, 120, true ) ;`
 
 |![Boxcar filtered image](/img/img_box_150.jpg)|
 |:--:|
-| Boxcar filtered image |
+| `ing_box` |
 
 |![Boxcar then Gaussian filtered image](/img/img_gaus_150.jpg)|
 |:--:|
-| Boxcar then Gaussian filtered image |
+| `ing_gaus` |
 
 |![Final output image](/img/img_out_150.jpg)|
 |:--:|
-| Final output image |
+| `ing_out`|
 
 
 
