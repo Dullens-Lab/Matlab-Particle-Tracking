@@ -24,7 +24,11 @@ Three step filtering starting with a boxcar filter to remove long scale variatio
 
 `img_out` 2D array of filtered image pixel values.
 
-#### Example 
+#### Ideal case example 
+
+With an appropriate brightfield image, where the sample if focused to maximize the bright spot at it's centre but not saturating any pixels.
+
+![This is an image](/img/img_in_150.jpg)
 
 `img = imread( '../img/tutorial_150.tif' ) ;`
 bpass( img, true, true, 80, true ) ;
