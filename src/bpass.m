@@ -116,18 +116,18 @@ function [ img_gaus, img_box, img_out ] = bpass( img, box_filter, gaus_filter, b
         img_out     = img_box ;
     end
 
-    if gaus_filter ~= false
+    if gaus_filter ~= false % NOT 0 or false
 
-        if gaus_filter == true
+        if islogical( gaus_filter )
             % Fast Noise Variance Estimation, see https://doi.org/10.1006/cviu.1996.0060
             [ img_rows, img_cols ] = size( img ) ;
 
             gaus_sigma     = sum( abs( conv2( img_out, [ 1 -2 1 ; -2 4 -2 ; 1 -2 1 ] ) ), 'all'  ) ;
-            gaus_filter    = round( gaus_sigma * sqrt( .5 * pi ) / ( 6 * ( img_rows - 2 ) * ( img_cols - 2 ) ) ) ;
+            gaus_filter    = round( gaus_sigma * sqrt( .5 * pi ) / ( 6 * ( img_rows - 2 ) * ( img_cols - 2 ) ) )
         end
 
         if gaus_filter ~= 1 % Dont waste my time with good images!
-            gaus_x      = - gaus_filter : gaus_filter ;
+            gaus_x      = - gaus_filter : gaus_filter 
             gaus_kernel = normalize( exp( -( gaus_x / ( 2 * gaus_filter ) ) .^2 ) ) ;
             img_gaus    = conv2( img_out, gaus_kernel, 'same' ) ;
             img_gaus    = conv2( img_gaus, gaus_kernel', 'same' ) ;
@@ -145,7 +145,7 @@ function [ img_gaus, img_box, img_out ] = bpass( img, box_filter, gaus_filter, b
 
     if display == true
 
-        fov = 2048 ;
+        fov = 150 ;
         figure_img = figure ; colormap( figure_img, 'gray') ; figure_hists = figure ;
 
         img_hist = @( x )  hist( x, min( x, [], 'all' ) : max( x, [], 'all' ) ) ;
