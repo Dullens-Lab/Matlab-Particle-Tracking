@@ -29,7 +29,7 @@ Three step filtering starting with a boxcar filter to remove long scale variatio
 `img = imread( '../img/tutorial_150.tif' ) ;`
 bpass( img, true, true, 80, true ) ;
 
-![This is an image](/img/img_box_2048.jpg)
+![This is an image](/img/img_box_2048.tiff)
 
 
 
