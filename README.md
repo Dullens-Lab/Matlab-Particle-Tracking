@@ -122,7 +122,7 @@ It would normally be advisable to check for pixel biasing but since we only have
 
 Consider the case where we have a poor camera or low light levels (fluorescence for example) and a poor quality/aligned microscope. Images here will have low and high frequency noise that will get in the way of accurately calculating the centroids.
 
-|![Poor Input Image](/img/img_in_poor.jpg)|
+|<img src="/img/img_in_poor.jpg" width="300">|
 |:--:|
 | `img_in` |
 
