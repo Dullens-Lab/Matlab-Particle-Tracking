@@ -76,19 +76,21 @@ Note that sub-pixel accuracy is dependent on the number of pixels over which the
 
 
 
-#### Ideal case example 
+## Examples
 
-With an appropriate brightfield image, where the sample if focused to maximize the bright spot at it's centre but not saturating any pixels.
+### Ideal case
+
+With an appropriate brightfield image, where the colloids (monodisperse) are focused to maximize the bright spot at the centre of the colloid but not saturating any pixels.
 
 |![Ideal input image](/img/img_in_150.jpg)|
 |:--:|
 | Ideal brightfield image |
 
-`img_in = imread( '../img/tutorial_150.tif' ) ;`
+The above image is an ideal case because the colloids are well separated, monodispere and are all in the same plane. There is also negligible noise and varying across the image. This means we can skip the long pass and high pass filtering steps and just apply an appropriate baseline to remove all of the background whilst retaining as many as possible pixels per colloid.
 
-`[img_lpass, img_hpass, img_out] = bpass( img, true, 2, 120, true ) ;`
+`img_out = bpass( img_in, false, false, 65 ) ;`
 
-|![Boxcar filtered image](/img/img_hpass_150.jpg)|
+|![Ideal Output Image](/img/img_out_ideal.jpg)|
 |:--:|
 | `img_hpass` |
 
