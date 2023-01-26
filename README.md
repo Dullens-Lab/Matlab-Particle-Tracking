@@ -92,17 +92,9 @@ The above image is an ideal case because the colloids are well separated, monodi
 
 |![Ideal Output Image](/img/img_out_ideal.jpg)|
 |:--:|
-| `img_hpass` |
+| `img_out` |
 
-The boxcar filter is convolution with a 3x3 array 
-
-|![Boxcar then gaussian filtered image](/img/img_lpass_150.jpg)|
-|:--:|
-| `img_lpass` |
-
-|![Final output image](/img/img_out_150.jpg)|
-|:--:|
-| `img_out`|
+`est_pks = pkfnd( img_out, threshold, excl_dia )`
 
 
 
