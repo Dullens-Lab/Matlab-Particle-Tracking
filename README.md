@@ -82,7 +82,7 @@ Note that sub-pixel accuracy is dependent on the number of pixels over which the
 
 With an appropriate brightfield image, where the colloids (monodisperse) are focused to maximize the bright spot at the centre of the colloid but not saturating any pixels.
 
-|![Ideal input image](/img/img_in_ideal.jpg)|   
+|![Ideal input image](/img/img_in_ideal.jpg)|  
 |:--:|
 | Ideal brightfield image |
 
