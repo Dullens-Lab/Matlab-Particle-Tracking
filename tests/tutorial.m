@@ -32,7 +32,7 @@ image_array = double( imread( '../img/tutorial_150.tif' ) ) ;
 
 excl_dia = 15 ;
 excl_rad = floor( excl_dia / 2 ) ;
-baseline = 60 ;
+backgrnd = 60 ;
 
 loop = 1 ;
 
@@ -43,7 +43,7 @@ time_cntrd = zeros( loop, 1 ) ;
 for n = 1 : loop
 
     tic
-    filtered_image = bpass( image_array, true, 2, baseline, true ) ;
+    filtered_image = bpass( image_array, true, 2, backgrnd, true ) ;
     time_bpass( n ) = toc;
     
     image_array_fig = figure ; colormap('gray'), imagesc( image_array ) ; axis square ;
@@ -76,6 +76,6 @@ for p = 1 : length( particles( :, 1 ) )
     line( [ x + excl_rad, x - excl_rad ], [ y + excl_rad, y + excl_rad ], 'Color','green' )
 end
 
-crc = viscircles( [ particles( :, 1 ), particles( :, 2 ) ], particles( :, 4 ) / 2, 'Color', 'g', 'EnhanceVisibility', false, 'LineWidth', 1 ) ;
+crc = viscircles( [ particles( :, 1 ), particles( :, 2 ) ], particles( :, 4 ) / 2, 'Color', 'r', 'EnhanceVisibility', false, 'LineWidth', 1 ) ;
 
 figure ; plot( particles(:,4), particles(:,3), 'o') 
