@@ -1,7 +1,7 @@
 %
-%Three step image manipulation starting with a high frequency pass filter to remove long scale variations. The high pass filtered image, `img_hpass` is then filtered with a low (gaussian) pass filter, to remove pixel noise. Finally, `img_lpass`, has any pixel values below `baseline` set to zero. Any step can be skipped with a `false` argument.
+%Three step image manipulation starting with a high frequency pass filter to remove long scale variations. The high pass filtered image, `img_hpass` is then filtered with a low (gaussian) pass filter, to remove pixel noise. Finally, `img_lpass`, has any pixel values below `backgrnd` set to zero. Any step can be skipped with a `false` argument.
 %
-%   `img_out = bpass( img_in, hpass, lpass, baseline, display )`
+%   `img_out = bpass( img_in, hpass, lpass, backgrnd, display )`
 %
 %   `img_in` 2D array of image pixel values.
 %
@@ -9,7 +9,7 @@
 %
 %   `lpass` Set to `true` to apply a gaussian filter with a strength calculated from the input image. Provide any positive integer for manual control of the gaussian kernel. Set to `false` to skip. For either auto or manual, if the strength of the filter is equal to 1 the image is assumed to be good enough amd gaussian filtering and will be skipped.
 %
-%   `baseline` Reset any pixel values below `baseline` to 0. Set to 'false' to skip.
+%   `backgrnd` Reset any pixel values below `backgrnd` to 0. Set to 'false' to skip.
 %
 %   `display` Plot the image and pixel distribution at each stage of the filtering. Set to `false` or leave blank to skip.
 %
@@ -80,10 +80,10 @@ picking parts of particles.
 
 %}
 
-function [ img_out, img_hpass, img_lpass ] = bpass( img, hpass, lpass, baseline, display )
+function [ img_out, img_hpass, img_lpass ] = bpass( img, hpass, lpass, backgrnd, display )
 
     if nargin < 4
-        warning('No image filtering performed. Not enough arguments provided in bpass( img, hpass, lpass, baseline, display )')
+        warning('No image filtering performed. Not enough arguments provided in bpass( img, hpass, lpass, backgrnd, display )')
         img_out = img ;
         return
     end
@@ -125,9 +125,9 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img, hpass, lpass, baseline,
         
     end
 
-    if baseline
+    if backgrnd
         img_base = img_out ;
-        img_base( img_base < baseline ) = 0 ; 
+        img_base( img_base < backgrnd ) = 0 ; 
         img_out = img_base ;
     end
 

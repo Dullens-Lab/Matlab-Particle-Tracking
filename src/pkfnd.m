@@ -65,7 +65,7 @@ Reformated to meet commenting and nomenclecture standards. AC
 
 %}
 
-function est_pks = pkfnd( img, th, excl_dia )
+function [ est_pks, input_pk_pxs ] = pkfnd( img, th, excl_dia )
 
     if nargin ~= 3
         warning('Not enough arguemts for pkfnd( img, th, excl_dia )') ;
@@ -82,6 +82,7 @@ function est_pks = pkfnd( img, th, excl_dia )
     if isa( img, 'double' ) ~= 1, img = double( img ) ; end
 
     [ pk_px_row, pk_px_col ]    = find( img >= th ) ;
+    input_pk_pxs                = length( pk_px_row ) ;
     [ img_rows, img_cols ]      = size( img ) ;
     excl_rad                    = floor( excl_dia / 2 ) ;
 
@@ -176,4 +177,4 @@ function est_pks = pkfnd( img, th, excl_dia )
 
     end
 
-    est_pks = [ pk_px_col, pk_px_row ] ;
+    est_pks = [ pk_px_col, pk_px_row ] ;    
