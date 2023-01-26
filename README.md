@@ -62,13 +62,13 @@ Calculates the centroid of a colloids position to sub-pixel accuracy.
 
 Returns `cntrds` N x 4 array containing, each colloids centroid, the brightest pixel and estimated radius.
 
-    `cntrds(:,1)` x-coordinates
+`cntrds(:,1)` x-coordinates
 
-    `cntrds(:,2)` y-coordinates
+`cntrds(:,2)` y-coordinates
 
-    `cntrds(:,3)` brightest pixel
-    
-    `cntrds(:,4)` estimated radii
+`cntrds(:,3)` brightest pixel
+
+`cntrds(:,4)` estimated radii
 
 Note that sub-pixel accuracy is dependent on the number of pixels over which the centroid is calculated. To check for pixel bias, plot a histogram of the fractional parts of the resulting locations. For example,
 
