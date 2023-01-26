@@ -113,6 +113,20 @@ Finally, we pass the `est_pks` to `cntrd()` along with either our filtered image
 |:--:|
 | `img_result` |
 
+The above image shows the original image with the centroid markers (green crosshair), the `excl_dia` (green square) and the estimated radii (red circles).
+
+It would normally be advisable to check for pixel biasing but since we only have a handful of particles we can simple just look at the `cntrds` values.
+
+
+### Noise and Image Distortions
+
+Consider the case where we have a poor camera or low light levels (fluorescence for example) and a poor quality/aligned microscope. Images here will have low and high frequency noise that will get in the way of accurately calculating the centroids.
+
+|![Poor Input Image](/img/img_in_poor.jpg)|
+|:--:|
+| `img_in` |
+
+
 
 The Matlab Particle Tracking Code originally developed by Daniel Blair and Eric Dufresne, based on the IDL algorithms developed by David Grier, John Crocker and Eric Weeks.
 
