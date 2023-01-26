@@ -109,7 +109,7 @@ Finally, we pass the `est_pks` to `cntrd()` along with either our filtered image
 
 `cntrds = cntrd( img_in, est_pks, 11, true )`
 
-|![Ideal Output Image](/img/img_result_ideal.jpg =250x250)|
+|![Ideal Output Image](/img/img_result_ideal.jpg | 250x250)|
 |:--:|
 | `img_result` |
 
