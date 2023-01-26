@@ -84,7 +84,7 @@ With an appropriate brightfield image, where the colloids (monodisperse) are foc
 
 |![Ideal input image](/img/img_in_ideal.jpg)|  
 |:--:|
-| Ideal brightfield image |
+| `img_in` |
 
 The above image is an ideal case because the colloids are well separated, monodispere and are all in the same plane. There is also negligible noise and varying across the image. This means we can skip the long pass and high pass filtering steps and just apply an appropriate baseline to remove all of the background whilst retaining as many as possible pixels per colloid.
 
