@@ -126,6 +126,10 @@ Consider the case where we have a poor camera or low light levels (fluorescence 
 |:--:|
 | `img_in` |
 
+Calculating the centroid of the above image will result in a 
+
+`img_filt = bpass( img_in, false, 8, 50)`
+
 |<img src="/img/img_in_noisy_filtered.jpg" width="150">|
 |:--:|
 | `img_in` filtered |
