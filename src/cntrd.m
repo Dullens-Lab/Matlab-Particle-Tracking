@@ -142,6 +142,7 @@ function cntrds = cntrd( img, est_pks, excl_dia, apply_mask )
         rows    = est_pks( n, 2 ) - excl_rad  : est_pks( n, 2 ) + excl_rad ;
         cols    = est_pks( n, 1 ) - excl_rad  : est_pks( n, 1 ) + excl_rad ;
         roi     = msk_binary .* img( rows, cols ) ;
+        figure ; colormap( 'gray' ) ; imagesc(roi)
         tot_br  = sum( roi, 'all' ) ;
 
         cntrd_x = est_pks( n, 1 ) + sum( roi .* msk_ind_x, 'all' ) / tot_br - excl_rad ;
