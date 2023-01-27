@@ -1,11 +1,11 @@
-
+%
 % Finds particle positions in an image to pixel level accuracy. The output here is expected to be passed to cntrd().
-
+%
 % After inits, first loops through all peak pixels and checks to see if it is the brightest in a 3 x 3 array (i.e. 8 nearest neighbours).
 % Then we exclude all peak pixels whos coordinates lie with the exclusion distance from the image edges.
 % Final step is to elimate all but the brightest pixel within the an area given by excl_dia.
-
-
+%
+%
 % est_pks = pkfnd( img, threshold, excl_dia )
 %
 % img:          2D array of image pixel values.
@@ -26,6 +26,7 @@
 %               Typically, the return is the input for cntrd().
 %
 % Inspired by the lmx subroutine of Grier and Crocker's feature.pro
+%
 
 %{
 
@@ -152,10 +153,9 @@ function [ est_pks, input_pk_pxs ] = pkfnd( img, th, excl_dia )
 
         for n = 1 : pk_px_num
 
-            rows = pk_px_coords( n, 1 ) - excl_rad : pk_px_coords( n, 1 ) + excl_rad ;
-            cols = pk_px_coords( n, 2 ) - excl_rad : pk_px_coords( n, 2 ) + excl_rad ;
-
-            roi = pk_px_img( rows, cols ) ;
+            rows    = pk_px_coords( n, 1 ) - excl_rad : pk_px_coords( n, 1 ) + excl_rad ;
+            cols    = pk_px_coords( n, 2 ) - excl_rad : pk_px_coords( n, 2 ) + excl_rad ;
+            roi     = pk_px_img( rows, cols ) ;
 
             [ roi_pk_px , roi_pk_px_ind ] = max( roi, [], 'all') ;
 

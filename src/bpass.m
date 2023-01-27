@@ -110,8 +110,8 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img, hpass, lpass, backgrnd,
             % Fast Noise Variance Estimation, see https://doi.org/10.1006/cviu.1996.0060
             [ img_rows, img_cols ] = size( img ) ;
 
-            lpass_sigma     = sum( abs( conv2( img_out, [ 1 -2 1 ; -2 4 -2 ; 1 -2 1 ] ) ), 'all'  ) ;
-            lpass    = round( lpass_sigma * sqrt( .5 * pi ) / ( 6 * ( img_rows - 2 ) * ( img_cols - 2 ) ) )
+            lpass_sigma = sum( abs( conv2( img_out, [ 1 -2 1 ; -2 4 -2 ; 1 -2 1 ] ) ), 'all'  ) ;
+            lpass       = round( lpass_sigma * sqrt( .5 * pi ) / ( 6 * ( img_rows - 2 ) * ( img_cols - 2 ) ) ) ;
         end
 
         if lpass ~= 1 % Dont waste my time with good images!
@@ -120,7 +120,7 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img, hpass, lpass, backgrnd,
             img_lpass    = conv2( img_out, lpass_kernel, 'same' ) ;
             img_lpass    = conv2( img_lpass, lpass_kernel', 'same' ) ;
             img_lpass    = scale2init8( img_lpass ) ;
-            img_out     = img_lpass ;
+            img_out      = img_lpass ;
         end
         
     end
@@ -133,7 +133,7 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img, hpass, lpass, backgrnd,
 
     if display == true
 
-        fov = 150 ;
+        fov = 36 ;
         figure_img = figure ; colormap( figure_img, 'gray') ; figure_hists = figure ;
 
         img_hist = @( x )  hist( x, min( x, [], 'all' ) : max( x, [], 'all' ) ) ;

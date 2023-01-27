@@ -118,11 +118,11 @@ The above image shows the original image with the centroid markers (green crossh
 It would normally be advisable to check for pixel biasing but since we only have a handful of particles we can simple just look at the `cntrds` values.
 
 
-### Noise and Image Distortions
+### Dealing with noise
 
-Consider the case where we have a poor camera or low light levels (fluorescence for example) and a poor quality/aligned microscope. Images here will have low and high frequency noise that will get in the way of accurately calculating the centroids.
+Consider the case where we have a poor camera or low light levels (fluorescence for example). Images here will have high frequency noise that will get in the way of accurately calculating the centroids.
 
-|<img src="/img/img_in_poor.jpg" width="300">|
+|<img src="/img/img_in_noise.jpg" width="150">|
 |:--:|
 | `img_in` |
 
