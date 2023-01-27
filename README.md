@@ -122,7 +122,7 @@ It would normally be advisable to check for pixel biasing but since we only have
 
 Consider the case where we have a poor camera or low light levels (fluorescence for example). Images here will have high frequency noise that will get in the way of accurately calculating the centroids.
 
-|<img src="/img/img_in_noise.jpg" width="150">|
+|<img src="/img/img_in_noisy.jpg" width="150">|
 |:--:|
 | `img_in` |
 
