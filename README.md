@@ -126,6 +126,10 @@ Consider the case where we have a poor camera or low light levels (fluorescence 
 |:--:|
 | `img_in` |
 
+|<img src="/img/img_in_noisy_filtered.jpg" width="150">|
+|:--:|
+| `img_in` filtered |
+
 
 
 The Matlab Particle Tracking Code originally developed by Daniel Blair and Eric Dufresne, based on the IDL algorithms developed by David Grier, John Crocker and Eric Weeks.
