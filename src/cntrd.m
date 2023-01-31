@@ -122,8 +122,8 @@ function cntrds = cntrd( img, est_pks, excl_dia, apply_mask )
         cent_px     = excl_rad + 1 ;
         msk_binary  = zeros( excl_dia ) ;  
         msk_binary( cent_px, cent_px ) = 1 ;    
-        msk_binary  = bwdist( msk_binary );
-        msk_binary  = msk_binary <= excl_rad;
+        msk_binary  = bwdist( msk_binary ) ;
+        msk_binary  = msk_binary <= excl_rad ;
     else
         msk_binary  = 1 ;
     end
@@ -139,10 +139,13 @@ function cntrds = cntrd( img, est_pks, excl_dia, apply_mask )
     cntrds = zeros( est_pks_num , 4 ) ;
 
     for n = 1 : est_pks_num
+
         rows    = est_pks( n, 2 ) - excl_rad  : est_pks( n, 2 ) + excl_rad ;
         cols    = est_pks( n, 1 ) - excl_rad  : est_pks( n, 1 ) + excl_rad ;
         roi     = msk_binary .* img( rows, cols ) ;
-        figure ; colormap( 'gray' ) ; imagesc(roi)
+        % if sum( roi( :, 1 ) + roi( :, end ) + roi( 1, : )' + roi( end, : )', 'all' ) ~= 0 
+        %     disp('hello from cntrd')
+        % end
         tot_br  = sum( roi, 'all' ) ;
 
         cntrd_x = est_pks( n, 1 ) + sum( roi .* msk_ind_x, 'all' ) / tot_br - excl_rad ;

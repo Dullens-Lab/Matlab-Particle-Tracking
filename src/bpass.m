@@ -40,6 +40,8 @@ above). It turns out that convolving with a column vector is faster than
 convolving with a row vector, so instead of transposing the kernel, the
 image is transposed twice.
 
+This is still true as of 2023. Also imgaussfilt() is also slower and has an effect of translating the centroids in X and Y
+
 CHANGELOG:
 
 Feb 1993
@@ -80,38 +82,65 @@ picking parts of particles.
 
 %}
 
-function [ img_out, img_hpass, img_lpass ] = bpass( img, hpass, lpass, backgrnd, display )
+function [ img_out, img_hpass, img_lpass ] = bpass( img_in, hpass, lpass, backgrnd, display )
 
     if nargin < 4
         warning('No image filtering performed. Not enough arguments provided in bpass( img, hpass, lpass, backgrnd, display )')
-        img_out = img ;
+        img_out = img_in ;
         return
     end
 
     if ~exist( 'display', 'var' ), display = false ; end
 
-    if isa( img, 'double' ) ~= 1, img = double( img ) ; end
+    if isa( img_in, 'double' ) ~= 1, img_in = double( img_in ) ; end
 
     normalize   = @( x ) x / sum( x ) ;
     scale2init8 = @( x ) ( x - min( x, [], 'all' ) ) ./ max( ( x - min( x, [], 'all' ) ), [], 'all' ) * 255 ;
-    img         = scale2init8( img ) ;
-    img_out     = img ;
+    
+    img_in      = scale2init8( img_in ) ;
+    img_out     = img_in ;
+    
 
+    %%%     High Pass Filter    %%%
+    
+    % The kernel is designed to increase the brightness of the center pixel relative to neighboring pixels.
+    % The kernel array usually contains a single positive value at its center, which is completely surrounded by negative values.
+    % The following array is an example of a 3 by 3 kernel for a high pass filter:
+    %
+    %   -1/9    -1/9    -1/9
+    %   -1/9     8/9    -1/9
+    %   -1/9    -1/9    -1/9
+    %
+    % https://www.l3harrisgeospatial.com/docs/highpassfilter.html
+    % TODO: Explore effect of amplitude on kernel
     if hpass
         box_kernel  = - ones( 3 ) / 9 ; box_kernel( 2, 2 ) = 8 / 9 ;
-        img_hpass     = conv2( img_out, box_kernel, 'same' ) ;
-        img_hpass     = scale2init8( img_hpass ) ;
+        img_hpass   = conv2( img_out, box_kernel, 'same' ) ;
+        img_hpass   = scale2init8( img_hpass ) ;
         img_out     = img_hpass ;
     end
 
-    if lpass ~= false % NOT 0 or false
+    %%%     Low Pass Filter    %%%
+    %
+    % The kernel is designed to blur groups of pixels based on lpass. If an integer is not provided, it is estiamted.
+    %
+    if lpass ~= false
 
         if islogical( lpass )
-            % Fast Noise Variance Estimation, see https://doi.org/10.1006/cviu.1996.0060
-            [ img_rows, img_cols ] = size( img ) ;
+            % Estimate noise from input image, see https://doi.org/10.1006/cviu.1996.0060
+            % 
+            % Noise Estimation Operator, nop
+            %    1  -2   1
+            %   -2   4  -2
+            %    1  -2   1
+            %
+            nop_bld = [ 1 -2 1 ] ;
+            nop     = [ nop_bld ; - nop_bld * 2 ; nop_bld ] ;
 
-            lpass_sigma = sum( abs( conv2( img_out, [ 1 -2 1 ; -2 4 -2 ; 1 -2 1 ] ) ), 'all'  ) ;
-            lpass       = round( lpass_sigma * sqrt( .5 * pi ) / ( 6 * ( img_rows - 2 ) * ( img_cols - 2 ) ) ) ;
+            [ img_rows, img_cols ] = size( img_out ) ;
+            % TODO: Should we calc nop from the raw input regardless if hpass has happened?
+            nop_sigma   = sum( abs( conv2( img_out, nop ) ), 'all'  ) ;
+            lpass       = round( nop_sigma * sqrt( .5 * pi ) / ( 6 * ( img_rows - 2 ) * ( img_cols - 2 ) ) ) ;
         end
 
         if lpass ~= 1 % Dont waste my time with good images!
@@ -125,11 +154,14 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img, hpass, lpass, backgrnd,
         
     end
 
+    %%%     Zero Background Pixels    %%%
+
     if backgrnd
         img_base = img_out ;
         img_base( img_base < backgrnd ) = 0 ; 
         img_out = img_base ;
     end
+
 
     if display == true
 
