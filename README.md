@@ -1,4 +1,3 @@
-# test
 # Particle Tracking tailored for the Dullens Lab
 
 Find positions within a microscope image or series of images of single or multiple colloids.
