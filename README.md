@@ -126,7 +126,9 @@ Finally, we pass the `est_pks` to `cntrd()` along with our filtered image `img_o
 
 The above image shows the original image with the centroid markers (green crosshair), the `excl_dia` (green square) and the estimated radii (red circles).
 
-It is advisable to check for pixel biasing by looking at the fractional components of the resulting centroids ( `hist( mod( cntrd( :, 1 ) ) )` for example. ) but since we only have a handful of particles we can simple just look at the values.
+It is advisable to check for pixel biasing by looking at the fractional components of the resulting centroids, 
+`hist( mod( cntrd( :, 1 ), 1 ) )` for example,
+but since we only have a handful of particles we can simple just look at the values.
 
 
 ### Dealing with noise
