@@ -10,6 +10,11 @@ If you want to get updates from this repo or if you want to contribute (recommen
 
 If you only want to use the code, download the repo your preferred way.
 
+Jump To
+- [`bpass()`](#`bpass()` Image Filtering)
+
+
+
 ### `bpass()` Image Filtering
 
 `img_out = bpass( img_in, hpass, lpass, bckgrnd, display )`
@@ -44,13 +49,12 @@ Find colloid positions in an image with pixel accuracy. The output here is expec
 All non-zero pixels within the exclusion radius `floor( excl_dia / 2 )` of the image edges are eliminated. Checks each pixel and eliminates all but the brightest within a 3x3 array centered on the current pixel. After which remaining pixels are then checked to see if it is the brightest in a n x n array centered on the current pixel where `n = excl_dia`.
 
 `img_in` 2D array of image pixel values. Ideally each colloid is represented by only a few non-zero pixels.
-   
+
 `threshold` Eliminates pixel values below `threshold`.
-   
+
 `excl_dia` Diameter, in pixels, over which to exclude all but the brightest pixel. Also excludes pixels within `excl_dia / 2` of image edges.
 
 Returns `est_pks` N x 2 array containing, pixelated coordinates of local maxima.
-
 
 ### `cntrd()` Calculate the Colloid Centroids
 
