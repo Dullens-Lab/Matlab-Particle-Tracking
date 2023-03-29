@@ -11,7 +11,7 @@ If you want to get updates from this repo or if you want to contribute (recommen
 If you only want to use the code, download the repo your preferred way.
 
 Jump To
-- [`bpass()`](#`bpass()` Image Filtering)
+- [bpass](#Image)
 
 
 
