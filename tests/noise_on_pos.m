@@ -1,14 +1,14 @@
 
-
+addpath( '../src/' ) ;
 clear all ; close all ;
 dim     = 40 ;
-sigma   = 6 ;
+sigma   = 3 ;
 [X, Y]  = meshgrid( 1 : dim, 1 : dim ) ;
 
 img_in = exp( -1 / ( sigma^2 ) * ( ( Y - dim / 2 ) .^2 + ( X - dim / 2) .^2 ) ) ;
 
 
-excl_dia = 27 ;
+excl_dia = 39 ;
 excl_rad = floor( excl_dia / 2 ) ;
 
 scale2init8 = @( x ) ( x - min( x, [], 'all' ) ) ./ max( ( x - min( x, [], 'all' ) ), [], 'all' ) * 255 ;
@@ -17,21 +17,25 @@ img_in  = scale2init8( img_in ) ;
 
 img_in  = double( uint8( img_in ) ) ;
 
+for t = 1 : 1
+
 for n = 1 : 10000
+
     noise = randn( dim ) ;
     noise = noise - min( noise, [], 'all' ) ;
     noise = noise / max( noise, [], 'all' ) ;
-    noise = noise * 1 ;
+    noise = noise * 40 ;
     noise = noise + 1 ;
     
+        
     img_noise = img_in .* noise ;
-
+    
     img_noise   = scale2init8( img_noise ) ;
 
-    img_filt    = bpass( img_noise, false, 10, 0) ;
+    img_filt    = bpass( img_noise, false, 12, 220) ;
 
     img_filt    = uint8(img_filt);
-    img_nfilt   = bpass( img_noise, false, false, 0) ;
+    img_nfilt   = bpass( img_noise, false, false, 30) ;
 
     est_pks_f   = pkfnd( img_filt, 0, excl_dia );
     cntrd_f     = cntrd( img_filt, est_pks_f, excl_dia, false ) ;
@@ -39,11 +43,17 @@ for n = 1 : 10000
     est_pks_nf  = pkfnd( img_nfilt, 0, excl_dia );
     cntrd_nf    = cntrd( img_nfilt, est_pks_nf, excl_dia, false ) ;
 
-    x_f( n )    = cntrd_f( 1, 1 ) ;
-    y_f( n )    = cntrd_f( 1, 2 ) ;
+    x_f( t, n )    = cntrd_f( 1, 1 ) ;
+    y_f( t, n )    = cntrd_f( 1, 2 ) ;
 
-    x_nf( n )   = cntrd_nf( 1, 1 ) ;
-    y_nf( n )   = cntrd_nf( 1, 2 ) ;
+    x_nf( t, n )   = cntrd_nf( 1, 1 ) ;
+    y_nf( t, n )   = cntrd_nf( 1, 2 ) ;
+
+end
+
+var_f( t ) = std( x_f ) ;
+
+var_nf( t ) = std( x_nf ) ; 
 
 end
 
