@@ -6,17 +6,16 @@ If you want to get updates from this repo or if you want to contribute (recommen
 
 `git clone https://github.com/Dullens-Lab/Matlab-Particle-Tracking`
 
-If you only want to use the code, download the repo your preferred way.
-
-## Jump To;
+## Jump To
 
 - [Functions](#functions)
     * [Image Preparation with bpass()](#image-filtering)
-    * [Find Peak Pixels](#find-peak-pixel)
-    * [Sub-pixel Centroids](#calculate-the-colloid-centroids)
+    * [Finding Peak Pixels with pkfnd()](#find-peak-pixel)
+    * [Sub-pixel Centroids with cntrd()](#calculate-the-colloid-centroids)
 
 - [Usage](#usage)
     * [Ideal Case](#ideal-case)
+    * [Pixel Biasing](#pixel-biasing)
 
 ## Functions
 
@@ -126,32 +125,26 @@ Finally, we pass the `est_pks` to `cntrd()` along with our filtered image `img_o
 
 The above image shows the original image with the centroid markers (green crosshair), the `excl_dia` (green square) and the estimated radii (red circles).
 
-It is advisable to check for pixel biasing by looking at the fractional components of the resulting centroids, 
-`hist( mod( cntrd( :, 1 ), 1 ) )` for example,
-but since we only have a handful of particles we can simple just look at the values.
+### Pixel Biasing
+
+It is advisable to check for pixel biasing by looking at the fractional components of the resulting centroids,
+
+`hist( mod( cntrd( :, 1 ), 1 ) )` for example.
+
+For a significant number of centroids, the distribution of the fractional component of the centroids should have a uniform distribution.
 
 
 ### Dealing with noise
 
-Consider the case where we have a poor camera or low light levels (fluorescence for example). Images here will have high frequency noise that will get in the way of accurately calculating the centroids.
+If we have a particularly noisy image, the high frequency noise will propagate through to the accuracy of the calculated centroid.
 
-|<img src="/img/img_in_noisy.jpg" width="150">|
-|:--:|
-| `img_in` |
-
-Calculating the centroid of the above image will result in a 
-
-`img_filt = bpass( img_in, false, 8, 50)`
-
-|<img src="/img/img_in_noisy_filtered.jpg" width="150">|
-|:--:|
-| `img_in` filtered |
+Try running `noise_on_pos.m` found in `test/` where an image of a colloid with a random, uniform distribution of pixel values is used to calculate the centroid with and wihtout filtering the image with a high pass filter.
 
 
+### Credits
 
-The Matlab Particle Tracking Code originally developed by Daniel Blair and Eric Dufresne, based on the IDL algorithms developed by David Grier, John Crocker and Eric Weeks.
+The Matlab Particle Tracking Code was originally developed by Daniel Blair and Eric Dufresne, based on the IDL algorithms developed by David Grier, John Crocker and Eric Weeks.
 
 Original Matlab code is distributed at https://site.physics.georgetown.edu/matlab/
 
 Original IDL code is distributed at https://physics.emory.edu/faculty/weeks/idl/
-

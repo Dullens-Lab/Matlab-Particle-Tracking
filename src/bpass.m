@@ -94,8 +94,6 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img_in, hpass, lpass, backgr
 
     if isa( img_in, 'double' ) ~= 1, img_in = double( img_in ) ; end
 
-    disp('this is much better you fool!')
-
     normalize   = @( x ) x / sum( x ) ;
     scale2init8 = @( x ) ( x - min( x, [], 'all' ) ) ./ max( ( x - min( x, [], 'all' ) ), [], 'all' ) * 255 ;
     
