@@ -157,9 +157,9 @@ function [ est_pks, input_pk_pxs ] = pkfnd( img, th, excl_dia )
             cols    = pk_px_coords( n, 2 ) - excl_rad : pk_px_coords( n, 2 ) + excl_rad ;
             roi     = pk_px_img( rows, cols ) ;
 
-            if sum( roi( :, 1 ) + roi( :, end ) + roi( 1, : )' + roi( end, : )', 'all' ) ~= 0 
-                disp('hello from pkfnd')
-            end
+            % if sum( roi( :, 1 ) + roi( :, end ) + roi( 1, : )' + roi( end, : )', 'all' ) ~= 0 
+            %     disp('hello from pkfnd')
+            % end 
 
             [ roi_pk_px , roi_pk_px_ind ] = max( roi, [], 'all') ;
 
