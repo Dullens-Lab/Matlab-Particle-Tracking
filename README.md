@@ -11,12 +11,16 @@ If you only want to use the code, download the repo your preferred way.
 ## Jump To;
 
 - [Functions](#functions)
-    * [bpass()](#`bpass()`-Image-Filtering)
+    * [Image Preparation with bpass()](#image-filtering)
+    * [Find Peak Pixels](#find-peak-pixel)
+    * [Sub-pixel Centroids](#calculate-the-colloid-centroids)
 
+- [Usage](#usage)
+    * [Ideal Case](#ideal-case)
 
 ## Functions
 
-### `bpass()` Image Filtering
+### Image Filtering
 
 `img_out = bpass( img_in, hpass, lpass, bckgrnd, display )`
 
@@ -41,7 +45,7 @@ Returns `img_out` 2D array of filtered image pixel values.
 `[ img_out, ~, img_lpass ] = bpass()`, respectively.
 
 
-### `pkfnd()` Find Colloids Central Pixel
+### Find Peak Pixel
 
 `est_pks = pkfnd( img, threshold, excl_dia )`
 
@@ -57,7 +61,7 @@ All non-zero pixels within the exclusion radius `floor( excl_dia / 2 )` of the i
 
 Returns `est_pks` N x 2 array containing, pixelated coordinates of local maxima.
 
-### `cntrd()` Calculate the Colloid Centroids
+### Calculate the Colloid Centroids
 
 `cntrds = cntrd( img_in, est_pks, excl_dia, apply_mask )`
 
@@ -84,17 +88,17 @@ Note that sub-pixel accuracy is dependent on the number of pixels over which the
 `hist( cntrds( :, 1 ) ./ floor( cntrds( :, 1 ) ) )`.
 
 
-## Examples
+## Usage
 
-### Ideal case
+### Ideal Case
 
-With an appropriate brightfield image, where monodisperse colloids are focused to maximize the contrast between colloids and the background but not saturating any pixels.
+A brightfield image, where monodisperse colloids are focused to maximize the contrast between colloids centre and the background, but not saturating any pixels.
 
 |![Ideal input image](/img/img_in_ideal.jpg)|  
 |:--:|
 | `img_in` |
 
-In the above image there is negligible noise and negligible variation across the dimensions of the image. This means we can skip the long pass and high pass filtering steps and just apply an appropriate `backgrnd` to remove all of the background whilst retaining as many as possible pixels per colloid.
+In the above image there is negligible noise and negligible variation across the image. We can skip the long pass and high pass filtering steps and just apply a `backgrnd` to zero all of the background pixels whilst retaining as many as possible pixels per colloid.
 
 `img_out = bpass( img_in, false, false, 65 ) ;`
 
@@ -102,7 +106,7 @@ In the above image there is negligible noise and negligible variation across the
 |:--:|
 | `img_out` |
 
-Now we can estimate the coordinates of each colloid to pixel level accuracy with `pkfnd()`.
+Now we can find the coordinates of the brightest pixel for each colloid with `pkfnd()`.
 
 `est_pks = pkfnd( img_out, 172, 11 )`
 
@@ -112,7 +116,7 @@ With `pkfnd()` we can apply a much higher threshold than with `bpass()` so as to
 
 Ideally `input_pk_pxs` is minimized without loosing any colloids.
 
-Finally, we pass the `est_pks` to `cntrd()` along with either our filtered image `img_out`, or in this case, since we have such a good image we can simple pass the original image and apply the circular mask function,
+Finally, we pass the `est_pks` to `cntrd()` along with our filtered image `img_out`, an exclusion diameter in pixels, and a boolean,
 
 `cntrds = cntrd( img_in, est_pks, 11, true )`
 
@@ -122,7 +126,7 @@ Finally, we pass the `est_pks` to `cntrd()` along with either our filtered image
 
 The above image shows the original image with the centroid markers (green crosshair), the `excl_dia` (green square) and the estimated radii (red circles).
 
-It would normally be advisable to check for pixel biasing but since we only have a handful of particles we can simple just look at the `cntrds` values.
+It is advisable to check for pixel biasing by looking at the fractional components of the resulting centroids ( `hist( mod( cntrd( :, 1 ) ) )` for example. ) but since we only have a handful of particles we can simple just look at the values.
 
 
 ### Dealing with noise
