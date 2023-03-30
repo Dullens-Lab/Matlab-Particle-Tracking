@@ -156,7 +156,7 @@ To demonstrates the effect of noise, the distribution of the calculated centroid
 
 Aggressive filtering with the low pass filter can result in sub-pixel biasing due to [ringing artifacts](https://en.wikipedia.org/wiki/Ringing_artifacts). The larger the `lpass` argument the higher the suppression of the high frequencies variations and the image becomes bandlimited, leading to ringing at points of high contrast (ie from background pixels to colloid pixels).
 
-|![Ringing Artifacts](/img/ringing_artifacts.jpg|width=100px ) ![Resulting Centroids Distribution](/img/ringing_artifacts_hist.jpg)|
+|![Ringing Artifacts](/img/ringing_artifacts.jpg|width=100px) ![Resulting Centroids Distribution](/img/ringing_artifacts_hist.jpg)|
 |:--:|
 | Centroids resulting from ringing artifacts and resulting distribution. |
 
