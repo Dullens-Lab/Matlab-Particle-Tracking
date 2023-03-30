@@ -95,3 +95,9 @@ disp( [ num2str( mean( x_nf ) ), ' - Unfiltered Mean' ] )
 
 disp( [ num2str( std( x_f ) ), ' - Filtered Variance ' ] )
 disp( [ num2str( mean( x_f ) ), ' - Filtered Mean ' ] )
+
+img_out_noise = imresize( img_noise,  [ 512 512 ] ) ;
+img_out_filt = imresize( img_filt,  [ 512 512 ] ) ;
+
+imwrite( uint8( img_out_noise ), 'img/img_in_noisy.jpg', 'jpeg' ) ;
+imwrite( uint8( img_out_filt ), 'img/img_in_noisy_filtered.jpg', 'jpeg' ) ;
