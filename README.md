@@ -138,7 +138,7 @@ For a significant number of centroids, the distribution of the fractional compon
 
 If you have a particularly noisy image, the high frequency noise will propagate through to the calculated centroid.
 
-Try running `noise_on_pos.m` found in `test/` where an image of a colloid with a random, uniform distribution of pixel noise is used to calculate the centroid with and without filtering the image with a high pass filter.
+Try running `noise_on_pos.m` found in `test/` where an image of a colloid with a random, uniform distribution of pixel noise is used to calculate the centroid with and without filtering the image with a low pass filter.
 
 An example image with noise and the resulting filtered image with `bpass( img_noise, false, 5, 80)` is shown below.
 
@@ -152,6 +152,13 @@ To demonstrates the effect of noise, the distribution of the calculated centroid
 |:--:|
 | Centroid distribution for unfiltered and filtered images. |
 
+#### Sub-Pixel Biasing
+
+Aggressive filtering with the low pass filter can result in sub-pixel biasing due to [ringing artifacts](https://en.wikipedia.org/wiki/Ringing_artifacts). The larger the `lpass` argument the higher the suppression of the high frequencies variations and the image becomes bandlimited, leading to ringing at points of high contrast (ie from background pixels to colloid pixels).
+
+|![Ringing Artifacts](/img/ringing_artifacts.jpg) ![Resulting Centroids Distribution](/img/ringing_artifacts_hist.jpg)|
+|:--:|
+| Centroids resulting from ringing artifacts and resulting distribution. |
 
 ### Credits
 

@@ -24,16 +24,18 @@ for n = 1 : 100000
     noise = rand( dim ) ;
     noise = noise - min( noise, [], 'all' ) ;
     noise = noise / max( noise, [], 'all' ) ;
-    noise = noise * 40 ;
+    noise = noise * 30 ;
+    % noise = noise * 40 ;
     
         
-    img_noise = img_in + noise ;
+    img_noise = img_in .* noise ;
     img_noise   = scale2init8( img_noise ) ;
 
-    img_filt    = bpass( img_noise, false, 5, 80) ;
+    img_filt    = bpass( img_noise, false, 12, 240) ;
+    % img_filt    = bpass( img_noise, false, 5, 80) ;
     img_filt    = uint8( img_filt );
 
-    img_nfilt   = bpass( img_noise, false, false, 40) ;
+    img_nfilt   = bpass( img_noise, false, 2, 40) ;
     img_nfilt    = uint8( img_nfilt );
 
     est_pks_f   = pkfnd( img_filt, 0, excl_dia );
