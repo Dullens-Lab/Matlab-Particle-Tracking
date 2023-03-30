@@ -146,7 +146,7 @@ An example image with noise and the resulting filtered image with `bpass( img_no
 |:--:|
 | Noisy image and filtered image. |
 
-To demonstrates the effect of noise, the distribution of the calculated centroids for 10^5 images with random uniform noise is shown below.
+To demonstrates the effect of noise, the distribution of the calculated centroids for 10<sup>5</sup> images with random uniform noise is shown below.
 
 |![Centroid distribution](/img/cntrd_dist.jpg)|
 |:--:|
