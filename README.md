@@ -140,11 +140,10 @@ If you have a particularly noisy image, the high frequency noise will propagate 
 
 Try running `noise_on_pos.m` found in `test/` where an image of a colloid with a random, uniform distribution of pixel noise is used to calculate the centroid with and wihout filtering the image with a high pass filter.
 
-<figure markdown>
-    ![Ideal Output Image](/img/img_in_noisy.jpg)
-    ![Ideal Output Image](/img/img_in_noisy_filtered.jpg)
-    <figcaption>Simulated noisy image and resulting filtered image.</figcaption>
-</figure>
+
+|![Ideal Output Image](/img/img_in_noisy.jpg)![Ideal Output Image](/img/img_in_noisy_filtered.jpg)|
+|:--:|
+| Simulated noisy image and resulting filtered image. |
 
 
 ### Credits
