@@ -138,12 +138,19 @@ For a significant number of centroids, the distribution of the fractional compon
 
 If you have a particularly noisy image, the high frequency noise will propagate through to the calculated centroid.
 
-Try running `noise_on_pos.m` found in `test/` where an image of a colloid with a random, uniform distribution of pixel noise is used to calculate the centroid with and wihout filtering the image with a high pass filter.
+Try running `noise_on_pos.m` found in `test/` where an image of a colloid with a random, uniform distribution of pixel noise is used to calculate the centroid with and without filtering the image with a high pass filter.
 
+An example image with noise and the resulting filtered image with `bpass( img_noise, false, 5, 80)` is shown below.
 
-|![Ideal Output Image](/img/img_in_noisy.jpg) ![Ideal Output Image](/img/img_in_noisy_filtered.jpg)|
+|![Noisy Image](/img/img_in_noisy.jpg) ![Filtered Image](/img/img_in_noisy_filtered.jpg)|
 |:--:|
-| Simulated noisy image and resulting filtered image. |
+| Noisy image and filtered image. |
+
+To demonstrates the effect of noise, the distribution of the calculated centroids for 10^5 images with random uniform noise is shown below.
+
+|![Centroid distribution](/img/cntrd_dist.jpg)|
+|:--:|
+| Centroid distribution for unfiltered and filtered images. |
 
 
 ### Credits
