@@ -170,11 +170,11 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img_in, hpass, lpass, backgr
 
         img_hist = @( x )  hist( x, min( x, [], 'all' ) : max( x, [], 'all' ) ) ;
 
-        [ hist_raw, x_hist ] = img_hist( img ) ;
+        [ hist_raw, x_hist ] = img_hist( img_in ) ;
         figure_hists ; semilogy1_raw = semilogy( x_hist, sum( hist_raw, 2 ), 'ko' ) ;
         set(semilogy1_raw, 'DisplayName', 'Raw' ) ;
         hold on
-        display_raw = subplot( 2, 2, 1, 'Parent', figure_img ) ; image( img( 1 : fov, 1 : fov ), 'Parent', display_raw) ;
+        display_raw = subplot( 2, 2, 1, 'Parent', figure_img ) ; image( img_in( 1 : fov, 1 : fov ), 'Parent', display_raw) ;
         title( display_raw, 'Raw Image' ) ; set( display_raw, 'YTickLabel', [ ] ) ; set( display_raw, 'XTickLabel', [ ] ) ;
 
         if hpass
