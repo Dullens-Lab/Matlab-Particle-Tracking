@@ -75,6 +75,9 @@ the estimated radius.
 Changed the mask such that it is a pixellated circle of diameter = excl_dia rather than excl_dia - 1.
 Added option to include mask or not.
 
+Dec 2023
+Added ability to carry through frame number from calling function AC
+
 
 
     % Create mask - window around trial location over which to calculate the centroid
@@ -98,7 +101,7 @@ Added option to include mask or not.
     % dst2 = msk_binary .* ( msk_inv .^2 ) ;
 
 %}
-function cntrds = cntrd( img, est_pks, excl_dia, apply_mask )
+function cntrds = cntrd( img, est_pks, excl_dia, apply_mask, frame )
 
     if isa( img, 'double' ) ~= 1, img = double( img ) ; end
 
@@ -136,7 +139,7 @@ function cntrds = cntrd( img, est_pks, excl_dia, apply_mask )
 
     [ est_pks_num, ~ ] = size( est_pks ) ;
 
-    cntrds = zeros( est_pks_num , 4 ) ;
+    cntrds = zeros( est_pks_num , 5 ) ;
 
     for n = 1 : est_pks_num
 
@@ -153,6 +156,6 @@ function cntrds = cntrd( img, est_pks, excl_dia, apply_mask )
         pk_val  = max( roi, [], 'all' ) ;
         rad_gyr = 2 * sqrt( sum( roi .^2, 'all' ) / numel( roi ) / pk_val ) ; % Estimate of particles diameter based on radius of gyration
         
-        cntrds( n, : ) = [ cntrd_x, cntrd_y, pk_val, rad_gyr ] ;
+        cntrds( n, : ) = [ cntrd_x, cntrd_y, pk_val, rad_gyr, frame ] ;
      
     end
