@@ -1,5 +1,5 @@
 %
-%Three step image manipulation starting with a high frequency pass filter to remove long scale variations. The high pass filtered image, `img_hpass` is then filtered with a low (gaussian) pass filter, to remove pixel noise. Finally, `img_lpass`, has any pixel values below `backgrnd` set to zero. Any step can be skipped with a `false` argument.
+% Three step image manipulation starting with a high frequency pass filter to remove long scale variations. The high pass filtered image, `img_hpass` is then filtered with a low (gaussian) pass filter, to remove pixel noise. Finally, `img_lpass`, has any pixel values below `backgrnd` set to zero. Any step can be skipped with a `false` argument.
 %
 %   `img_out = bpass( img_in, hpass, lpass, backgrnd, display )`
 %
@@ -40,7 +40,7 @@ above). It turns out that convolving with a column vector is faster than
 convolving with a row vector, so instead of transposing the kernel, the
 image is transposed twice.
 
-This is still true as of 2023. Also imgaussfilt() is also slower and has an effect of translating the centroids in X and Y
+This is still true as of 2023. Also imgaussfilt() is also slower and has the effect of translating the centroids in X and Y
 
 CHANGELOG:
 
