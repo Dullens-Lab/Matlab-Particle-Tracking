@@ -3,7 +3,7 @@
 %
 % After inits, first loops through all peak pixels and checks to see if it is the brightest in a 3 x 3 array (i.e. 8 nearest neighbours).
 % Then we exclude all peak pixels whos coordinates lie with the exclusion distance from the image edges.
-% Final step is to elimate all but the brightest pixel within the an area given by excl_dia.
+% Final step is to elimate all but the brightest pixel within the area given by excl_dia.
 %
 %
 % est_pks = pkfnd( img, threshold, excl_dia )
