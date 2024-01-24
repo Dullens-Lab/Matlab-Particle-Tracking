@@ -87,7 +87,7 @@ function [ est_pks, input_pk_pxs ] = pkfnd( img, th, excl_dia )
     [ img_rows, img_cols ]      = size( img ) ;
     excl_rad                    = floor( excl_dia / 2 ) ;
 
-    if length( pk_px_row ) == 0
+    if isempty( pk_px_row )
         warning( ['The provided image does not contain any pixel values above the ', num2str(th), ' pixel threshold set in pkfnd()'] ) ;
         est_pks = [ ] ;
         return;
