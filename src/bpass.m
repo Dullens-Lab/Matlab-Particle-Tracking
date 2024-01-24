@@ -97,6 +97,10 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img_in, hpass, lpass, backgr
     normalize   = @( x ) x / sum( x ) ;
     scale2init8 = @( x ) ( x - min( x, [], 'all' ) ) ./ max( ( x - min( x, [], 'all' ) ), [], 'all' ) * 255 ;
     
+    % TODO: This can be problematic in the scenario where we have a group
+    % of images but some images contain no objects. In this case we scale
+    % the noise to 255 and therefore pick up these bright noisy pixels
+
     img_in      = scale2init8( img_in ) ;
     img_out     = img_in ;
     
@@ -122,7 +126,7 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img_in, hpass, lpass, backgr
 
     %%%     Low Pass Filter    %%%
     %
-    % The kernel is designed to blur groups of pixels based on lpass. If an integer is not provided, it is estiamted.
+    % The kernel is designed to blur groups of pixels based on lpass. If an integer is not provided, it is estimated.
     %
     if lpass ~= false
 
