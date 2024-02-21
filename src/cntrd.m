@@ -1,7 +1,7 @@
 %
 % Calculates the centroid of bright spots to sub-pixel accuracy.
 %
-% particles = cntrd( img, est_pks, excl_dia )
+% particles = cntrd( img, est_pks, excl_dia, apply_mask, frame  )
 % 
 % img:          2D array of image pixel values.
 %               Particles should be bright spots on a dark background with little noise.

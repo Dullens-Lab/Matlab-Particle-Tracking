@@ -1,0 +1,31 @@
+%
+% Particle Tracking Tutorial
+%
+% Origanal: https://site.physics.georgetown.edu/matlab/tutorial.html
+%
+%
+
+close all ; clear all ;
+
+addpath( '../src/', 'data/' )
+
+particles = [] ;
+
+for frame = 1 : 1
+    
+    image_array = double( imread( [ 'data/' num2str( frame ) '.tiff' ] ) ) ;
+
+    excl_dia = 17 ;
+    excl_rad = floor( excl_dia / 2 ) ;
+    backgrnd = 120 ;
+
+    %   `img_out = bpass( img_in, hpass, lpass, backgrnd, display )`
+    filtered_image = bpass( image_array, false, false, backgrnd, false ) ;
+
+    % est_pks = pkfnd( img, threshold, excl_dia )
+    est_pks = pkfnd( filtered_image, backgrnd, excl_dia ) ;
+
+    % particles = cntrd( img, est_pks, excl_dia )
+    cntrds = [ cntrds ; cntrd( filtered_image, est_pks, excl_dia, true, frame ) ] ;
+
+end

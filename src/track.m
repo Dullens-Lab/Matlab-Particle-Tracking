@@ -195,11 +195,11 @@ if sum( dt ) == 0
     return
 end
 
-dt_ind = find( dt ~= 0 )  ; % Indicies before a frame change
+indicies = find( dt ~= 0 )  ; % Indicies before a frame change
 
-frames  = length( dt_ind ) ;
+frames  = length( indicies ) ;
 
-res     = [ 1, dt_ind', length( t ) ] ;
+res     = [ 1, indicies', length( t ) ] ;
 
 ngood   = indicies( 1 ) ; % Index before first time change. Effectively, the number of particles for first frame.
 eyes    = 1 : ngood ; % Array from 1 to index before first time change. 
@@ -260,8 +260,8 @@ if notnsqrd % if number of particles > 200 & number of input dimensions - 1 < 7
     volume = 1 ;
 
     for d = 1 : dim
-        minn    = min( xyzs( dt_ind, d ) ) ; % I think this is the minmum coordinates of the last particle over all frames but I dont understand why we are using this
-        maxx    = max( xyzs( dt_ind, d ) ) ;
+        minn    = min( xyzs( indicies, d ) ) ; % AC I think this is the minmum coordinates of the last particle over all frames but I dont understand why we are using this
+        maxx    = max( xyzs( indicies, d ) ) ;
         volume  = volume * ( maxx - minn ) ;
     end
 
@@ -318,7 +318,6 @@ for i = 2 : z
             cub     = cube ;
             deg     = find( dimm < 3 ) ;
             if ~isempty( deg )
-                
                 for j = 0 : length( deg ) - 1
                     cub = cub( find( cub( :, deg( j + 1 ) ) < dimm( deg( j + 1 ) ) ), : ) ;
                 end
