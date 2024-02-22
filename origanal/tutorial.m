@@ -1,44 +1,53 @@
-
-
+%
+% Particle Tracking Tutorial
+%
+% Origanal: https://site.physics.georgetown.edu/matlab/tutorial.html
+%
+%
 
 close all ; clear all ;
 
+addpath( '../tests/data' )
 
-image_array = double( imread( '../test.tif' ) );
+particles = [] ;
+pks = [] ;
 
-est_noise = floor( mean( mean( diff( image_array ), 2 ) ) ) ;
-
-excl_dia = 15 ;
-threshold = 41 ;
-
-loop = 1 ;
-
-time_bpass = zeros( loop, 1 ) ;
-time_pkfnd = zeros( loop, 1 ) ;
-time_cntrd = zeros( loop, 1 ) ;
-
-for n = 1:loop
-    tic
-    filtered_image = bpass( image_array, est_noise, excl_dia ) ;
-    time_bpass( n ) = toc;
+for frame = 900 : 999
     
-    % colormap('gray'), imagesc( image_array ) ;
-    tic
-    est_pks = pkfnd( image_array, threshold, excl_dia ) ;
-    time_pkfnd( n ) = toc ;
-    
-    tic
-    particles = cntrd( image_array, est_pks, excl_dia );
-    time_cntrd( n ) = toc ;
-    
-    % viscircles( [particles(:,1), particles(:,2)], particles(:,4) / 2 * .6, 'Color','g')  ;
+    image_array = double( imread( [ '../tests/data/' num2str( frame ) '.tiff' ] ) ) ;
 
-    % figure ; plot(particles(:,4),particles(:,3),'.') 
+    % image_array = image_array( 1 : 50, 1 : 55 ) ;
+
+    excl_dia = 11 ;
+    excl_rad = floor( excl_dia / 2 ) ;
+    backgrnd = 120 ;
+
+
+    %   `img_out = bpass( img_in, hpass, lpass, backgrnd, display )`
+    % filtered_image = bpass( image_array, 0, excl_dia, backgrnd ) ;
+
+    % est_pks = pkfnd( img, threshold, excl_dia )
+    est_pks = pkfnd( image_array, backgrnd, excl_dia ) ;
+    pks = [ pks ; est_pks ] ;
+
+    % particles = cntrd( img, est_pks, excl_dia )
+    cntrds = cntrd( image_array, est_pks, excl_dia ) ;
+    cntrds = [ cntrds frame * ones( length( cntrds( : , 1 ) ), 1 ) ] ;
+    particles = [ particles ; cntrds ] ;
+
+    % image_array_fig = figure ; colormap('gray'), imagesc( image_array ) ; axis square ;
+    % 
+    % crc = viscircles( [ cntrds( :, 1 ), cntrds( :, 2 ) ], cntrds( :, 4 ) / 2, 'Color', 'r', 'EnhanceVisibility', false, 'LineWidth', 1 ) ;
+
 
 end
 
-time_bpass = mean( time_bpass )
-time_pkfnd = mean( time_pkfnd )
-time_cntrd = mean( time_cntrd )
-total = time_bpass + time_pkfnd + time_cntrd
-size( particles )
+figure ; plot( particles(:,4), particles(:,3), 'o') 
+
+xyt = particles( :, [ 1 2 5 ] ) ;
+tic
+tracks = track( xyt, 5 ) ;
+toc
+
+figure
+plot(tracks(:,1),tracks(:,2),'.')
