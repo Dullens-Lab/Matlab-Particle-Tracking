@@ -1,4 +1,4 @@
-function out=cntrd(im,mx,sz,interactive)
+function out=cntrd_org(im,mx,sz,interactive)
 % out=cntrd(im,mx,sz,interactive)
 % 
 % PURPOSE:  calculates the centroid of bright spots to sub-pixel accuracy.

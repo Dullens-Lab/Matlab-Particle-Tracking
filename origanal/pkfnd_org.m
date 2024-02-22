@@ -1,4 +1,4 @@
-function out=pkfnd(im,th,sz)
+function out=pkfnd_org(im,th,sz)
 % finds local maxima in an image to pixel level accuracy.   
 %  this provides a rough guess of particle
 %  centers to be used by cntrd.m.  Inspired by the lmx subroutine of Grier

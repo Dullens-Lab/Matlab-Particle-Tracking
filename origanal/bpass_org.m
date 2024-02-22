@@ -1,4 +1,4 @@
-function res = bpass(image_array,lnoise,lobject,threshold)
+function res = bpass_org(image_array,lnoise,lobject,threshold)
 % 
 % NAME:
 %               bpass
