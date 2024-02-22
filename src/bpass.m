@@ -91,7 +91,7 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img_in, hpass, lpass, backgr
     end
 
     if ~exist( 'display', 'var' ), display = false ; end
-
+    % Convert to double 
     if isa( img_in, 'double' ) ~= 1, img_in = double( img_in ) ; end
 
     normalize   = @( x ) x / sum( x ) ;
