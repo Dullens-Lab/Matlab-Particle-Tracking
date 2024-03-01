@@ -107,13 +107,13 @@ function cntrds = cntrd( img, est_pks, excl_dia, apply_mask, frame )
 
     if rem( excl_dia, 2 ) == false 
         warning('Exclusion diameter (excl_dia) must be an odd integer.') ;
-        particles = [ ] ;
+        cntrds = [ ] ;
         return ;
     end
 
     if isempty( est_pks )
         warning('There were no estimated peaks (est_pks) provided. Maybe the threshold in pkfnd() is too high.')
-        particles = [ ] ;
+        cntrds = [ ] ;
         return;
     end
 
@@ -121,7 +121,7 @@ function cntrds = cntrd( img, est_pks, excl_dia, apply_mask, frame )
     excl_rad = floor( excl_dia / 2 ) ;
 
     if apply_mask == true
-        % Create a circular mask around trial
+        % Create a circular mask around estimated peak
         cent_px     = excl_rad + 1 ;
         msk_binary  = zeros( excl_dia ) ;  
         msk_binary( cent_px, cent_px ) = 1 ;    
