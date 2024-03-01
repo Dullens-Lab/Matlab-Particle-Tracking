@@ -173,6 +173,8 @@ function tracks = track(xyzs,maxdisp,param)
 % ;
 % ;-
 
+% Determine the length of the feature vector (dimensionality)
+
 dd = length(xyzs(1,:));
 
 %use default parameters if none given
