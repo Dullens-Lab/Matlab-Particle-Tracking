@@ -5,23 +5,18 @@
 %
 %
 
-close all ; clear all ;
+close all ; clearvars ;
 
-particles = [] ;
-pks = [] ;
+addpath( '../' )
+tutorial_params
 
 for frame = 1 : 100
     
     image_array = double( imread( [ '../tests/data/test_img_' num2str( frame, '%03.f' ) '.tiff' ] ) ) ;
 
-    image_array = image_array( 512 : 612, 512 : 612 ) ;
+    image_array = image_array( 412 : 612, 412 : 612 ) ;
 
-    excl_dia = 17 ;
-    excl_rad = floor( excl_dia / 2 ) ;
-    backgrnd = 120 ;
-
-
-    %   `img_out = bpass( img_in, hpass, lpass, backgrnd, display )`
+    % img_out = bpass( img_in, hpass, lpass, backgrnd, display )
     filtered_image = bpass( image_array, false, false, backgrnd, false ) ;
 
     % est_pks = pkfnd( img, threshold, excl_dia )
@@ -30,45 +25,31 @@ for frame = 1 : 100
 
     % particles = cntrd( img, est_pks, excl_dia )
     cntrds = cntrd( image_array, est_pks, excl_dia, true, frame ) ;
-    cntrds = [ cntrds frame * ones( length( cntrds( : , 1 ) ), 1 ) ] ;
     particles = [ particles ; cntrds ] ;
-
-    % image_array_fig = figure ; colormap('gray'), imagesc( image_array ) ; axis square ;
-    % 
-    % crc = viscircles( [ cntrds( :, 1 ), cntrds( :, 2 ) ], cntrds( :, 4 ) / 2, 'Color', 'r', 'EnhanceVisibility', false, 'LineWidth', 1 ) ;
-
 
 end
 
-figure ; plot( particles(:,4), particles(:,3), 'o') 
-
 xyt = particles( :, [ 1 2 5 ] ) ;
-param.mem = 4 ;
-param.good = 0 ;
-param.dim = length( xyt( 1, : ) ) - 1 ;
-param.quiet = 0 ;
 
-tic
-
-tracks = track( xyt, 13, param ) ;
-toc
-
-figure
-plot(tracks(:,1),tracks(:,2),'.')
+tracks = track( xyt, 11, param ) ;
 
 counts = [] ; centers = [] ;
-yout = [] ;
-xout = [] ;
+yout = [] ; xout = [] ;
+
 for n = 1 : max( tracks( :, 4 ) )
     ind = find( tracks( :, 4 ) == n ) ;
     clear counts centers
     dat = tracks(ind, 1 ) - mean(tracks(ind, 1 ) );
-    [counts, centers ] = hist( dat, 5 ) ;
+    [counts, centers ] = hist( dat, 20 ) ;
     yout = [ yout ; counts ] ;
     xout = [ xout ; centers ] ;
 end
 
-plot(rot90(xout(:,1)),rot90(yout(:,1)),'.')
+figure ; plot( particles(:,4), particles(:,3), 'o') 
+figure ; plot(tracks(:,1),tracks(:,2),'.')
+
+ind = 1 : max( tracks( :, 4 ) ) ;
+figure ; plot(mean( xout( ind, : ) ), mean( yout( ind, : ) ), 'o')
 
 
 
