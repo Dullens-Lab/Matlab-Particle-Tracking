@@ -150,6 +150,8 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img_in, hpass, lpass, backgr
         if lpass ~= 1 % Dont waste my time with good images!
             lpass_x      = - lpass : lpass ;
             lpass_kernel = normalize( exp( -( lpass_x / ( 2 * lpass ) ) .^2 ) ) ;
+            % TODO: A comment from https://github.com/zaptowicz/Particle-Tracking-using-Matlab/blob/main/bpass.m line 77
+            % suggests setting mean(img) == 0 reduces artifacts, explore this.
             img_lpass    = conv2( img_out, lpass_kernel, 'same' ) ;
             img_lpass    = conv2( img_lpass, lpass_kernel', 'same' ) ;
             img_lpass    = scale2init8( img_lpass ) ;
