@@ -162,13 +162,13 @@ This code 'track.pro' is copyright 1999, by John C. Crocker. It should be consid
 
 %}
 
-function tracks = track(xyzs,maxdisp,param)
+function tracks = track( xyzs, maxdisp, param )
 
     % Determine the length of the feature vector (dimensionality)
     dd = length( xyzs( 1, : ) ) ;
 
     % Use default parameters if none given
-    if nargin==2
+    if nargin == 2
         memory_b    = 0 ;       % If memory is not needed set to zero
         goodenough  = 0 ;       % If goodenough is not wanted, set to zero
         dim         = dd - 1 ;
@@ -191,8 +191,6 @@ function tracks = track(xyzs,maxdisp,param)
         return
     end
 
-    info = 1 ;
-
     % Initialize variables
     w = find( st > 0 ) ;
     z = length( w ) ;
@@ -212,16 +210,18 @@ function tracks = track(xyzs,maxdisp,param)
     else  
         res = length( t ) - 1 ;
     end
-      
+    
+    % CHATGPT: Get the initial positions
     res     = [ 1, res', length( t ) ] ;
     ngood   = res( 2 ) - res( 1 ) + 1 ;
-    eyes    = 1 : ngood ;
+    eyes    = 1 : ngood ; % Indices of the good data points.
     pos     = xyzs( eyes, 1 : dim ) ;
-    istart  = 2 ;
+    istart  = 2 ; % Start from the second frame
     n       = ngood ;
 
     % Set initial parameters
     % I think this is the number of frames that are looked at in one batch
+    % CHATGPT: Set the working copy time span based on the number of particles
     zspan   = 50 ;
     
     if n > 200 
@@ -236,7 +236,7 @@ function tracks = track(xyzs,maxdisp,param)
     bigresx = zeros( z, n ) - 1 ;
     mem     = zeros( n, 1 ) ;
 
-    uniqid  = 1 : n ;
+    uniqid  = 1 : n ; % Unique identifier for each particle
     maxid   = n ;
     olist   = [ 0, 0 ] ;
 
@@ -278,7 +278,7 @@ function tracks = track(xyzs,maxdisp,param)
         blocksize = max( [ maxdisp, ( ( volume ) / ( 20 * ngood ) )^( 1.0 / dim ) ] ) ;
     end
 
-    % Start the main loop over the frames.
+    % Main loop for tracking particles through frames
     for i = istart : z
         ispan   = mod( i - 1, zspan ) + 1 ;
         % Get the new particle positions.
@@ -386,6 +386,7 @@ function tracks = track(xyzs,maxdisp,param)
                     scub_spos   = scube + spos( j ) ;
                     s           = mod( scub_spos, nblocks ) ;
                     whzero      = find( s == 0 ) ;
+                    
                     if ~isempty( whzero )
                         nfk = find( s ~=0 ) ;
                         s   = s( nfk ) ;
@@ -411,7 +412,6 @@ function tracks = track(xyzs,maxdisp,param)
                         end
 
                         ltmax       = distq < maxdisq ;
-                        
                         rowtot( j ) = sum( ltmax ) ;
                         
                         if rowtot( j ) >= 1 
@@ -427,673 +427,689 @@ function tracks = track(xyzs,maxdisp,param)
                 ngood   = length( w ) ;
 
                 if ngood ~= 0 
-                    ww = find(coltot( which1(w) ) == 1);
-                    ngood = length(ww);
+                    ww      = find( coltot( which1( w ) ) == 1 ) ;
+                    ngood   = length( ww ) ;
+                    
                     if ngood ~= 0 
-                        %disp(size(w(ww)))
-                        resx(ispan,w(ww)) = eyes( which1(w(ww)));
-                        found( which1( w(ww))) = 1;
-                        rowtot( w(ww)) = 0;
-                        coltot( which1(w(ww))) = 0;
+                        resx( ispan, w( ww ) ) = eyes( which1 (w( ww ) ) ) ;
+                        found( which1( w( ww ) ) ) = 1 ;
+                        rowtot( w( ww ) ) = 0 ;
+                        coltot( which1( w( ww ) ) ) = 0 ;
                     end
                 end
                 
-                labely = find( rowtot > 0);
-                ngood = length(labely);
+                labely  = find( rowtot > 0);
+                ngood   = length( labely ) ;
+                
                 if ngood ~= 0 
-                    labelx = find( coltot > 0);
-                    
-                    nontrivial = 1;
+                    labelx = find( coltot > 0 ) ;
+                    nontrivial = 1 ;
                 else
-                    nontrivial = 0;
+                    nontrivial = 0 ;
                 end
 
-            else 
-        
-                %   or: Use simple N^2 time routine to calculate trivial bonds      
-        
-                % let's try a nice, loopless way!
-                % don't bother tracking perm. lost guys.
-                wh = find( pos(:,1) >= 0);
-                ntrack = length(wh);
+            else
+                
+                % Use simple N^2 time routine to calculate trivial bonds
+
+                % Don't bother tracking perm. lost guys
+                wh      = find( pos( :, 1 ) >= 0 ) ;
+                ntrack  = length( wh ) ;
+                
                 if ntrack == 0 
-                    'There are no valid particles to track idiot!'
+                    disp( 'No valid particles to track!' )
                     break
                 end
-                xmat = zeros(ntrack,m);
-                count = 0;
-                for kk=1:ntrack
-                    for ll=1:m
-                        xmat(kk,ll) = count;
-                        count = count+1;
-                    end
-                end
-                count = 0;
-                for kk=1:m
-                    for ll=1:ntrack
-                        ymat(kk,ll) = count;
-                        count = count+1;
+                
+                xmat    = zeros( ntrack, m ) ;
+                count   = 0 ;
+                
+                for kk = 1 : ntrack
+                    
+                    for ll = 1 : m
+                        xmat( kk, ll ) = count ;
+                        count = count + 1 ;
                     end
                 end
 
-                xmat = (mod(xmat,m) + 1);
-                ymat = (mod(ymat,ntrack) +1)';
-                [lenxn,lenxm] = size(xmat);
-    %            whos ymat
-    %            whos xmat
-    %            disp(m)
+                count = 0 ;
+                
+                for kk = 1 : m
+                    
+                    for ll = 1 : ntrack
+                        ymat( kk, ll ) = count ;
+                        count = count + 1 ;
+                    end
+                end
 
-                for d=1:dim
-                    x = xyi(:,d);
-                    y = pos(wh,d);
-                    xm = x(xmat);
-                    ym = y(ymat(1:lenxn,1:lenxm));
-                    if size(xm) ~= size(ym)
-                        xm = xm';
+                xmat = ( mod( xmat, m ) + 1 ) ;
+                ymat = ( mod( ymat, ntrack ) + 1 )' ;
+                [ lenxn, lenxm ] = size( xmat ) ;
+
+                for d = 1 : dim
+                    x   = xyi( :, d ) ;
+                    y   = pos( wh, d ) ;
+                    xm  = x( xmat ) ;
+                    ym  = y( ymat( 1 : lenxn, 1 : lenxm ) ) ;
+                    
+                    if size( xm ) ~= size( ym )
+                        xm = xm' ;
                     end
                     
                     if d == 1
-                        dq = (xm -ym).^2;
-                        %dq = (x(xmat)-y(ymat(1:lenxn,1:lenxm))).^2;
+                        dq = ( xm - ym ) .^2 ;
                     else
-                        dq = dq + (xm-ym).^2;
-                        %dq = dq + (x(xmat)-y(ymat(1:lenxn,1:lenxm)) ).^2;
+                        dq = dq + ( xm - ym ) .^2 ;
                     end
                 end
                 
-                ltmax = dq < maxdisq;
+                ltmax = dq < maxdisq ;
                 
-                % figure out which trivial bonds go with which
-                
-                rowtot = zeros(n,1);
-                rowtot(wh) = sum(ltmax,2);
-                
-                
+                % Figure out which trivial bonds go with which
+                rowtot          = zeros( n, 1 ) ;
+                rowtot( wh )    = sum( ltmax, 2 ) ;
+
                 if ntrack > 1 
-                    coltot = sum(ltmax,1);
+                    coltot = sum( ltmax, 1 ) ;
                 else
-                    coltot = ltmax;
-                end
-                which1 = zeros(n,1);
-                for j=1:ntrack 
-                    [mx, w] = max(ltmax(j,:));
-                    which1(wh(j)) = w;
+                    coltot = ltmax ;
                 end
                 
-                ntrk = fix( n - sum(rowtot == 0));
-                w= find( rowtot == 1) ;
-                ngood = length(w);
+                which1 = zeros( n, 1 ) ;
+                
+                for j = 1 : ntrack 
+                    [ mx, w ] = max( ltmax( j, : ) ) ;
+                    which1( wh( j ) ) = w ;
+                end
+                
+                ntrk    = fix( n - sum( rowtot == 0 ) ) ;
+                w       = find( rowtot == 1 ) ;
+                ngood   = length( w ) ;
+                
                 if ngood ~= 0
-                    ww = find(coltot(which1(w)) == 1);
-                    ngood = length(ww);
+                    ww      = find( coltot( which1( w ) ) == 1 ) ;
+                    ngood   = length( ww ) ;
+
                     if ngood ~= 0 
-                        resx( ispan, w(ww) ) = eyes( which1( w(ww)));
-                        found(which1( w(ww))) = 1;
-                        rowtot(w(ww)) = 0;
-                        coltot(which1(w(ww))) = 0;
+                        resx( ispan, w( ww ) ) = eyes( which1( w( ww ) ) ) ;
+                        found( which1( w( ww ) ) ) = 1 ;
+                        rowtot( w( ww ) ) = 0 ;
+                        coltot( which1( w( ww ) ) ) = 0 ;
                     end
                 end
                 
-                labely = find( rowtot > 0);
-                ngood = length(labely);
+                labely  = find( rowtot > 0 ) ;
+                ngood   = length( labely ) ;
                 
                 if ngood ~= 0
-                    labelx = find( coltot > 0);
-                    nontrivial = 1;
+                    labelx      = find( coltot > 0 ) ;
+                    nontrivial  = 1 ;
                 else
-                    nontrivial = 0;
+                    nontrivial  = 0 ;
                 end
             end
             
-            %THE TRIVIAL BOND CODE ENDS
+            % Trivial bond code ends
             
             if nontrivial
+                xdim = length( labelx ) ;
+                ydim = length( labely ) ;
                 
-                xdim = length(labelx);
-                ydim = length(labely);
+                % Make a list of the non-trivial bonds            
+                bonds   = zeros( 1, 2 ) ;
+                bondlen = 0 ;
                 
-                %  make a list of the non-trivial bonds            
-                
-                bonds = zeros(1,2);
-                bondlen = 0;
-                
-                for j=1:ydim
-                    distq = zeros(xdim,1);
+                for j = 1 : ydim
+                    distq = zeros( xdim, 1 ) ;
                     
-                    for d=1:dim
-                        %distq
-                        distq = distq + (xyi(labelx,d) - pos(labely(j),d)).^2;
-                        %distq    
+                    for d = 1 : dim
+                        distq = distq + ( xyi( labelx, d ) - pos( labely( j ), d ) ) .^2 ;
                     end
                     
-                    w= find(distq <  maxdisq)' - 1;
-                    ngood = length(w);
-                    newb = [w;(zeros(1,ngood)+j)];
-                    
-                    
-                    bonds = [bonds;newb'];
-                
-                    bondlen = [ bondlen;distq( w + 1) ];
-                    
+                    w       = find( distq <  maxdisq )' - 1 ;
+                    ngood   = length( w ) ;
+                    newb    = [ w ; ( zeros( 1, ngood ) + j ) ] ;
+                    bonds   = [ bonds ; newb' ] ;
+                    bondlen = [ bondlen ; distq( w + 1 ) ] ;
                 end
-                bonds = bonds(2:end,:);
-                
-                bondlen = bondlen(2:end);
-                numbonds = length(bonds(:,1));
-                mbonds = bonds;
-                max([xdim,ydim]);
-                    
-                    
-                if max([xdim,ydim]) < 4
-                    nclust = 1;
-                    maxsz = 0;
-                    mxsz = xdim;
-                    mysz = ydim;
-                    bmap = zeros(length(bonds(:,1)+1),1) - 1;
+
+                bonds       = bonds( 2 : end, : ) ;
+                bondlen     = bondlen( 2 : end ) ;
+                numbonds    = length( bonds( :, 1 ) ) ;
+                mbonds      = bonds ;
+
+                if max( [ xdim, ydim ] ) < 4
+                    nclust  = 1 ;
+                    maxsz   = 0 ;
+                    mxsz    = xdim ;
+                    mysz    = ydim ;
+                    bmap    = zeros( length( bonds( :, 1 ) + 1 ), 1 ) - 1 ;
                 
                 else
-            
 
                     %   THE SUBNETWORK CODE BEGINS            
-                    lista = zeros(numbonds,1);
-                    listb = zeros(numbonds,1);
-                    nclust = 0;
-                    maxsz = 0;
-                    thru = xdim;
+                    lista   = zeros( numbonds, 1 ) ;
+                    listb   = zeros( numbonds, 1 ) ;
+                    nclust  = 0 ;
+                    maxsz   = 0 ;
+                    thru    = xdim ;
                     
                     while thru ~= 0
                         %  the following code extracts connected 
-                        %   sub-networks of the non-trivial 
-                        %   bonds.  NB: lista/b can have redundant entries due to 
-                        %   multiple-connected subnetworks      
+                        %  sub-networks of the non-trivial 
+                        %  bonds.  NB: lista/b can have redundant entries due to 
+                        %  multiple-connected subnetworks      
+                        w                   = find( bonds( :, 2 ) >= 0 ) ;                        
+                        lista( 1 )          = bonds( w( 1 ), 2 ) ;
+                        listb( 1 )          = bonds( w( 1 ), 1 ) ;
+                        bonds( w( 1 ), : )  = -( nclust + 1 ) ;
+                        adda    = 1 ;
+                        addb    = 1 ;
+                        donea   = 0 ;
+                        doneb   = 0 ;
                         
-                        
-                        w = find(bonds(:,2) >= 0);
-    %                 size(w)
-                        
-                        lista(1) = bonds(w(1),2);
-                        listb(1) = bonds(w(1),1);
-                        bonds(w(1),:) = -(nclust+1);
-                        bonds;
-                        adda = 1;
-                        addb = 1;
-                        donea = 0;
-                        doneb = 0;
-                        if (donea ~= adda) | (doneb ~= addb)
-                            true = 0;
+                        if ( donea ~= adda ) | ( doneb ~= addb )
+                            true = 0 ;
                         else
-                        true = 1;   
+                            true = 1 ;   
                         end
                                             
                         while ~true
                             
-                            if (donea ~= adda)
-                                w = find(bonds(:,2) == lista(donea+1));
-                                ngood = length(w);
+                            if ( donea ~= adda )
+                                w       = find( bonds( :, 2 ) == lista( donea + 1 ) ) ;
+                                ngood   = length( w ) ;
+                                
                                 if ngood ~= 0 
-                                    listb(addb+1:addb+ngood,1) = bonds(w,1);
-                                    bonds(w,:) = -(nclust+1);
-                                    addb = addb+ngood;
+                                    listb( addb + 1 : addb + ngood, 1 ) = bonds( w, 1 ) ;
+                                    bonds( w, : ) = -( nclust + 1 ) ;
+                                    addb = addb + ngood ;
                                 end
-                                donea = donea+1;
+
+                                donea = donea + 1 ;
                             end
-                            if (doneb ~= addb) 
-                                w = find(bonds(:,1) == listb(doneb+1));
-                                ngood = length(w);
+
+                            if ( doneb ~= addb ) 
+                                w = find( bonds( :, 1 ) == listb( doneb + 1 ) ) ;
+                                ngood = length( w ) ;
+                                
                                 if ngood ~= 0
-                                    lista(adda+1:adda+ngood,1) = bonds(w,2);
-                                    bonds(w,:) = -(nclust+1);
-                                    adda = adda+ngood;
+                                    lista( adda + 1 : adda + ngood, 1 ) = bonds( w, 2 ) ;
+                                    bonds( w, : ) = -( nclust + 1 ) ;
+                                    adda = adda + ngood ;
                                 end
-                                doneb = doneb+1;
+
+                                doneb = doneb + 1 ;
                             end
-                        if (donea ~= adda) | (doneb ~= addb) 
-                            true = 0;
-                        else  
-                            true = 1;
-                        end
+
+                            if ( donea ~= adda ) | ( doneb ~= addb ) 
+                                true = 0 ;
+                            else  
+                                true = 1 ;
+                            end
                         end
                         
-                        [pp,pqx] = sort(listb(1:doneb));
-                        %unx =  unq(listb(1:doneb),pqx);
-                        %implanting unq directly
-                            arr = listb(1:doneb);
-                            q = arr(pqx);
-                            indices = find(q ~= circshift(q,-1));
-                            count = length(indices);
-                            if count > 0
-                                unx = pqx(indices);
-                            else
-                                unx = length(q) -1;
-                            end
+                        [ pp, pqx ] = sort( listb( 1 : doneb ) ) ;
+                        % Implanting unq directly
+                        arr         = listb( 1 : doneb ) ;
+                        q           = arr( pqx ) ;
+                        indices     = find( q ~= circshift( q, -1 ) ) ;
+                        count       = length( indices ) ;
+                        
+                        if count > 0
+                            unx = pqx( indices ) ;
+                        else
+                            unx = length( q ) - 1 ;
+                        end
                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                        
-                        xsz = length(unx);
-                        [pp,pqy] = sort(lista(1:donea));
-                        %uny =  unq(lista(1:donea),pqy);
+
+                        xsz         = length(unx);
+                        [ pp, pqy ] = sort( lista( 1 : donea ) ) ;
                         %implanting unq directly
-                            arr = lista(1:donea);
-                            q = arr(pqy);
-                            indices = find(q ~= circshift(q,-1));
-                            count = length(indices);
-                            if count > 0
-                                uny = pqy(indices);
-                            else
-                                uny = length(q) -1;
-                            end
+                        arr         = lista( 1 : donea ) ;
+                        q           = arr( pqy ) ;
+                        indices     = find( q ~= circshift( q, -1 ) ) ;
+                        count       = length( indices ) ;
+                        
+                        if count > 0
+                            uny = pqy( indices ) ;
+                        else
+                            uny = length( q ) - 1 ;
+                        end
                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                   
+ 
+                        ysz = length( uny ) ;
                         
-                        
-                        
-                        
-                        ysz = length(uny);
-                        if xsz*ysz > maxsz
-                            maxsz = xsz*ysz;
-                            mxsz = xsz;
-                            mysz = ysz; 
+                        if xsz * ysz > maxsz
+                            maxsz   = xsz * ysz ;
+                            mxsz    = xsz ;
+                            mysz    = ysz ; 
                         end
                         
-                        
-                        thru = thru -xsz;
-                        nclust = nclust + 1;
+                        thru    = thru - xsz ;
+                        nclust  = nclust + 1 ;
                     end
-                    bmap = bonds(:,2);                    
+
+                    bmap = bonds( :, 2 ) ;                    
                 end
                 % THE SUBNETWORK CODE ENDS
-                % put verbose in for Jaci
-                
-                %   THE PERMUTATION CODE BEGINS
-                
-                for nc =1:nclust
-                    w = find( bmap == -1*(nc));
+
+                % THE PERMUTATION CODE BEGINS
+                for nc = 1 : nclust
+                    w           = find( bmap == -1 * ( nc ) ) ;
+                    nbonds      = length( w ) ;
+                    bonds       = mbonds( w, : ) ;
+                    lensq       = bondlen( w ) ;
+                    [ pq, st ]  = sort( bonds( :, 1 ) ) ;
+                    arr         = bonds( :, 1 ) ;
+                    q           = arr( st ) ;
+                    indices     = find( q ~= circshift( q, -1 ) ) ;
+                    count       = length( indices ) ;
                     
-                    nbonds = length(w);
-                    bonds = mbonds(w,:);
-                    lensq = bondlen(w);
-                    [pq,st] = sort( bonds(:,1));
-                    %un = unq(bonds(:,1),st);
-                    %implanting unq directly     
-                            arr = bonds(:,1);
-                            q = arr(st);
-                            indices = find(q ~= circshift(q,-1));
-                            count = length(indices);
-                            if count > 0
-                                un = st(indices);
-                            else
-                                un = length(q) -1;
-                            end
-                        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                    if count > 0
+                        un = st( indices ) ;
+                    else
+                        un = length( q ) - 1 ;
+                    end
+                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                    uold        = bonds( un, 1 ) ;
+                    nold        = length( uold ) ;
+                    % Implanting unq directly  
+                    indices     = find( bonds( :, 2 ) ~= circshift( bonds( :, 2 ), -1 ) ) ;
+                    count       = length( indices ) ;
                     
+                    if count > 0
+                        un = indices ;
+                    else  
+                        un = length( bonds( :, 2 ) ) -1 ;
+                    end
                     
-                    uold = bonds(un,1);
-                    
-                    nold = length(uold);
-                    
-                    %un = unq(bonds(:,2));
-                    
-                    %implanting unq directly  
-                    indices = find(bonds(:,2) ~= circshift(bonds(:,2),-1));
-                    count = length(indices);
-                        if count > 0
-                            un = indices;
-                        else  
-                            un = length(bonds(:,2)) -1;
-                        end
-                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
-                        
-                    unew = bonds(un,2);
-                    nnew = length(unew);
+                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+                    unew        = bonds( un, 2 ) ;
+                    nnew        = length( unew ) ;
                     
                     if nnew > 5
-                        rnsteps = 1;
-                        for ii =1:nnew
-                            rnsteps = rnsteps * length( find(bonds(:,2) == ...
-                                unew(ii)));
+                        rnsteps = 1 ;
+                        
+                        for ii = 1 : nnew
+                            rnsteps = rnsteps * length( find( bonds( :, 2 ) == unew( ii ) ) ) ;
+                            
                             if rnsteps > 5.e+4
-                                disp('Warning: difficult combinatorics encountered.')
+                                disp('Difficult combinatorics encountered.')
                             end
+
                             if rnsteps > 2.e+5
-                                disp(['Excessive Combinitorics you FOOL LOOK WHAT YOU HAVE' ...
-                                        ' DONE TO ME!!!'])
+                                disp('Warning: Excessive Combinatorics! Try reducing maxdisp.' )
                                 return
                             end
                         end
                     end
-                    st = zeros(nnew,1);
-                    fi = zeros(nnew,1);
-                    h = zeros(nbonds,1);
-                    ok = ones(nold,1);
-                    nlost = (nnew - nold) > 0;
-                    
-                    
-                    for ii=1:nold 
-                        h(find(bonds(:,1) == uold(ii))) = ii;
+
+                    st      = zeros( nnew, 1 ) ;
+                    fi      = zeros( nnew, 1 ) ;
+                    h       = zeros( nbonds, 1 ) ;
+                    ok      = ones( nold, 1 ) ;
+                    nlost   = ( nnew - nold ) > 0 ;
+
+                    for ii = 1 : nold 
+                        h( find( bonds( :, 1 ) == uold( ii ) ) ) = ii ;
                     end
-                    st(1) = 1 ;
-                    fi(nnew) = nbonds; % check this later
+
+                    st( 1 ) = 1 ;
+                    fi( nnew ) = nbonds ;
+
                     if nnew > 1 
-                        sb = bonds(:,2);
-                        sbr = circshift(sb,1);
-                        sbl = circshift(sb,-1);
-                        st(2:end) = find( sb(2:end) ~= sbr(2:end)) + 1;
-                        fi(1:nnew-1) = find( sb(1:nbonds-1) ~= sbl(1:nbonds-1));
+                        sb                  = bonds( :, 2 ) ;
+                        sbr                 = circshift( sb, 1 ) ;
+                        sbl                 = circshift( sb, -1 ) ;
+                        st( 2 : end )       = find( sb( 2 : end ) ~= sbr( 2 : end ) ) + 1 ;
+                        fi( 1 : nnew - 1 )  = find( sb( 1 : nbonds - 1 ) ~= sbl( 1 : nbonds - 1 ) ) ;
                     end
-    %                if i-1 == 13
-    %                    hi
-    %                end
-                    checkflag = 0;
+
+                    checkflag = 0 ;
+
                     while checkflag ~= 2
-                        
-                        pt = st -1;
-                        lost = zeros(nnew,1);
-                        who = 0;
-                        losttot = 0;
-                        mndisq = nnew*maxdisq;
-                        
+                        pt      = st - 1 ;
+                        lost    = zeros( nnew, 1 ) ;
+                        who     = 0 ;
+                        losttot = 0 ;
+                        mndisq  = nnew * maxdisq ;
                         
                         while who ~= -1
-                        
-                            if pt(who+1) ~= fi(who+1)
+
+                            if pt( who + 1 ) ~= fi( who + 1 )
+                                w       = find( ok( h( pt( who + 1 ) + 1 : fi( who + 1 ) ) ) ) ;
+                                ngood   = length( w ) ;
                                 
-                                
-                                w = find( ok( h( pt( who+1 )+1:fi( who+1 ) ) ) ); % check this -1
-                                ngood = length(w);
                                 if ngood > 0
-                                    if pt(who+1) ~= st(who+1)-1
-                                        ok(h(pt(who+1))) = 1;
+
+                                    if pt( who + 1 ) ~= st( who + 1 ) - 1
+                                        ok( h( pt( who + 1 ) ) ) = 1 ;
                                     end
-                                    pt(who+1) = pt(who+1) + w(1);
-                                    ok(h(pt(who+1))) = 0;
-                                    if who == nnew -1
-                                        ww = find( lost == 0);
-                                        dsq = sum(lensq(pt(ww))) + losttot*maxdisq;
+
+                                    pt( who + 1 ) = pt( who + 1 ) + w( 1 ) ;
+                                    ok( h( pt( who + 1 ) ) ) = 0 ;
+                                    
+                                    if who == nnew - 1
+                                        ww  = find( lost == 0 ) ;
+                                        dsq = sum( lensq( pt( ww ) ) ) + losttot * maxdisq ;
                                         
                                         if dsq < mndisq 
-                                            minbonds = pt(ww);
-                                            mndisq = dsq;
+                                            minbonds    = pt( ww ) ;
+                                            mndisq      = dsq ;
                                         end
+
                                     else
-                                        who = who+1;
+
+                                        who = who + 1 ;
                                     end
+
                                 else
-                                    if ~lost(who+1) & (losttot ~= nlost)
-                                        lost(who+1) = 1;
-                                        losttot = losttot + 1;
-                                        if pt(who+1) ~= st(who+1) -1;
-                                            ok(h(pt(who+1))) = 1;
+                                    
+                                    if ~lost( who + 1 ) & ( losttot ~= nlost )
+                                        lost( who + 1 ) = 1 ;
+                                        losttot = losttot + 1 ;
+                                        
+                                        if pt( who + 1 ) ~= st( who + 1 ) - 1 ;
+                                            ok( h( pt( who + 1 ) ) ) = 1 ;
                                         end
-                                        if who == nnew-1
-                                            ww = find( lost == 0);
-                                            dsq = sum(lensq(pt(ww))) + losttot*maxdisq;
+
+                                        if who == nnew - 1
+                                            ww  = find( lost == 0 ) ;
+                                            dsq = sum( lensq( pt( ww ) ) ) + losttot * maxdisq ;
+                                            
                                             if dsq < mndisq
-                                                minbonds = pt(ww);
-                                                mndisq = dsq;
+                                                minbonds    = pt( ww ) ;
+                                                mndisq      = dsq ;
                                             end
-                                        else    
-                                        who = who + 1;
+
+                                        else
+
+                                            who = who + 1 ;
                                         end
                                     
                                     else
-                                        if pt(who+1) ~= (st(who+1) -1) 
-                                            ok(h(pt(who+1))) = 1;
+
+                                        if pt( who + 1 ) ~= ( st( who + 1 ) - 1 ) 
+                                            ok( h( pt( who + 1 ) ) ) = 1 ;
                                         end
-                                        pt(who+1) = st(who+1) -1;
-                                        if lost(who+1) 
-                                            lost(who+1) = 0;
-                                            losttot = losttot -1;
+
+                                        pt( who + 1 ) = st( who + 1 ) - 1 ;
+                                        
+                                        if lost( who + 1 )
+                                            lost( who + 1 ) = 0 ;
+                                            losttot         = losttot - 1 ;
                                         end
-                                        who = who -1;
+
+                                        who = who - 1 ;
                                     end
                                 end
+
                             else  
-                                if ~lost(who+1) & (losttot ~= nlost)
-                                    lost(who+1) = 1;
-                                    losttot = losttot + 1;
-                                    if pt(who+1) ~= st(who+1)-1
-                                        ok(h(pt(who+1))) = 1;
+                                
+                                if ~lost( who + 1 ) & ( losttot ~= nlost )
+                                    lost( who + 1 ) = 1 ;
+                                    losttot         = losttot + 1 ;
+                                    
+                                    if pt( who + 1 ) ~= st( who + 1 ) - 1
+                                        ok( h( pt( who + 1 ) ) ) = 1 ;
                                     end
-                                    if who == nnew -1
-                                        ww = find( lost == 0);
-                                        dsq = sum(lensq(pt(ww))) + losttot*maxdisq;
+
+                                    if who == nnew - 1
+                                        ww  = find( lost == 0 ) ;
+                                        dsq = sum( lensq( pt( ww ) ) ) + losttot * maxdisq ;
                                         
                                         if dsq < mndisq
-                                            minbonds = pt(ww);
-                                            mndisq = dsq;
+                                            minbonds    = pt( ww ) ;
+                                            mndisq      = dsq ;
                                         end
+
                                     else
-                                        who = who + 1;
+
+                                        who = who + 1 ;
                                     end
+
                                 else
-                                    if pt(who+1) ~= st(who+1) -1
-                                        ok(h(pt(who+1))) = 1;
+
+                                    if pt( who + 1 ) ~= st( who + 1 ) - 1
+                                        ok( h( pt( who + 1 ) ) ) = 1 ;
                                     end
-                                    pt(who+1) = st(who+1) -1;
-                                    if lost(who+1) 
-                                        lost(who+1) = 0;
-                                        losttot = losttot -1;
+
+                                    pt( who + 1 ) = st( who + 1 ) - 1 ;
+                                    
+                                    if lost( who + 1 ) 
+                                        lost( who + 1 ) = 0 ;
+                                        losttot         = losttot - 1 ;
                                     end
-                                    who = who -1;
+
+                                    who = who - 1 ;
                                 end
                             end
                         end
                         
-                        checkflag = checkflag + 1;
+                        checkflag = checkflag + 1 ;
+                        
                         if checkflag == 1
-                            plost = min([fix(mndisq/maxdisq) , (nnew -1)]);
+                            plost = min( [ fix( mndisq / maxdisq ), ( nnew - 1 ) ] ) ;
+                            
                             if plost > nlost 
-                                nlost = plost; 
+                                nlost = plost ;
                             else
-                                checkflag = 2;
+                                checkflag = 2 ;
                             end
                         end
                         
                     end  
-                    %   update resx using the minimum bond configuration               
                     
-                    resx(ispan,labely(bonds(minbonds,2))) = eyes(labelx(bonds(minbonds,1)+1));
-                    found(labelx(bonds(minbonds,1)+1)) = 1;
+                    % Update resx using the minimum bond configuration
+                    resx( ispan, labely( bonds( minbonds, 2 ) ) )   = eyes( labelx( bonds( minbonds, 1 ) + 1 ) ) ;
+                    found( labelx( bonds( minbonds, 1 ) + 1 ) )     = 1 ;
 
                 end
-
-                %   THE PERMUTATION CODE ENDS
+                % THE PERMUTATION CODE ENDS
             end
             
-            w = find(resx(ispan,:) >= 0);
-            nww = length(w);
+            w   = find( resx( ispan, : ) >= 0 ) ;
+            nww = length( w ) ;
             
             if nww > 0 
-                pos(w,:) = xyzs( resx(ispan,w) , 1:dim);
+                pos( w, : ) = xyzs( resx( ispan, w ), 1 : dim ) ;
+                
                 if goodenough > 0 
-                    nvalid(w) = nvalid(w) + 1;
+                    nvalid( w ) = nvalid( w ) + 1 ;
                 end
-            end  %go back and add goodenough keyword thing   
-            newguys = find(found == 0);
-            
-        nnew = length(newguys);
-        
-            if (nnew > 0) % & another keyword to workout inipos
-                newarr = zeros(zspan,nnew) -1;
-                resx = [resx,newarr];
 
-                resx(ispan,n+1:end) = eyes(newguys);
-                pos = [[pos];[xyzs(eyes(newguys),1:dim)]];
-                nmem = zeros(nnew,1);
-                mem = [mem;nmem];
-                nun = 1:nnew;
-                uniqid = [uniqid,((nun) + maxid)];
-                maxid = maxid + nnew;
+            end  % Go back and add goodenough keyword thing   
+            
+            newguys = find( found == 0 ) ;
+            nnew    = length( newguys ) ;
+        
+            if ( nnew > 0 ) % & another keyword to workout inipos
+                newarr                      = zeros( zspan, nnew ) - 1 ;
+                resx                        = [ resx, newarr ] ;
+                resx( ispan, n + 1 : end )  = eyes( newguys ) ;
+                pos                         = [ [ pos ] ; [ xyzs( eyes( newguys ), 1 : dim ) ] ] ;
+                nmem                        = zeros( nnew, 1 ) ;
+                mem                         = [ mem ; nmem ] ;
+                nun                         = 1 : nnew ;
+                uniqid                      = [ uniqid, ( ( nun ) + maxid ) ] ;
+                maxid                       = maxid + nnew ;
+
                 if goodenough > 0 
-                    dumphash = [dumphash;zeros(1,nnew)'];
-                    nvalid = [nvalid;zeros(1,nnew)'+1];
+                    dumphash    = [ dumphash ; zeros( 1, nnew )' ] ;
+                    nvalid      = [ nvalid ; zeros( 1, nnew )' + 1 ] ;
                 end
-                % put in goodenough 
-                n = n + nnew;
-                    
+
+                % Put in goodenough 
+                n = n + nnew ;
             end
     
         else
-            ' Warning- No positions found for t='
+            disp(' Warning: No positions found for t=')
         end
-        w = find( resx(ispan,:) ~= -1);
-        nok = length(w);
+
+        w   = find( resx( ispan, : ) ~= - 1 ) ;
+        nok = length( w ) ;
+        
         if nok ~= 0
-            mem(w) =0;
+            mem( w ) = 0 ;
         end
         
-        mem = mem + (resx(ispan,:)' == -1);
-        wlost = find(mem == memory_b+1);
-        nlost =length(wlost);
+        mem     = mem + ( resx( ispan, : )' == - 1 ) ;
+        wlost   = find( mem == memory_b + 1 ) ;
+        nlost   = length( wlost ) ;
 
-        if nlost > 0 
-            pos(wlost,:) = -maxdisp;
+        if nlost > 0
+            pos( wlost, : ) = - maxdisp ;
+
             if goodenough > 0
-                wdump = find(nvalid(wlost) < goodenough);
-                ndump = length(wdump);
+                wdump   = find( nvalid( wlost ) < goodenough ) ;
+                ndump   = length( wdump ) ;
+                
                 if ndump > 0
-                    dumphash(wlost(wdump)) = 1;
+                    dumphash( wlost( wdump ) ) = 1 ;
                 end
+
             end
             % put in goodenough keyword stuff if 
         end
-        if (ispan == zspan) | (i == z)
-            nold = length(bigresx(1,:));
-            nnew = n-nold;
+
+        if ( ispan == zspan ) | ( i == z )
+            nold    = length( bigresx( 1, : ) ) ;
+            nnew    = n - nold ;
+
             if nnew > 0
-                newarr = zeros(z,nnew) -1;
-                bigresx = [bigresx,newarr];
+                newarr  = zeros( z, nnew ) - 1 ;
+                bigresx = [ bigresx, newarr ] ;
             end
+
             if goodenough > 0  
-                if (sum(dumphash)) > 0
-                    wkeep = find(dumphash == 0);
-                    nkeep = length(wkeep);
-                    resx = resx(:,wkeep);
-                    bigresx = bigresx(:,wkeep);
-                    pos = pos(wkeep,:);
-                    mem = mem(wkeep);
-                    uniqid = uniqid(wkeep);
-                    nvalid = nvalid(wkeep);
-                    n = nkeep;
-                    dumphash = zeros(nkeep,1);
+                
+                if ( sum( dumphash ) ) > 0
+                    wkeep       = find( dumphash == 0 ) ;
+                    nkeep       = length( wkeep ) ;
+                    resx        = resx( :, wkeep ) ;
+                    bigresx     = bigresx( :, wkeep ) ;
+                    pos         = pos( wkeep, : ) ;
+                    mem         = mem( wkeep ) ;
+                    uniqid      = uniqid( wkeep ) ;
+                    nvalid      = nvalid( wkeep ) ;
+                    n           = nkeep ;
+                    dumphash    = zeros( nkeep, 1 ) ;
                 end
             end
             
             % again goodenough keyword
-            if quiet~=1
-                disp(strcat(num2str(i), ' of ' ,num2str(z), ' done.  Tracking  ',num2str(ntrk),' particles  ', num2str(n),' tracks total'));
+            if quiet ~= 1
+                disp( strcat( num2str( i ), ' of ', num2str( z ), ' done.  Tracking  ', num2str( ntrk ), ' particles  ', num2str( n ), ' tracks total' ) ) ;
             end
-            bigresx(i-(ispan)+1:i,:) = resx(1:ispan,:);
-            resx = zeros(zspan,n) - 1;
 
-    
-            wpull = find(pos(:,1) == -maxdisp);
-            npull = length(wpull);
+            bigresx( i - ( ispan ) + 1 : i, : ) = resx( 1 : ispan, : ) ;
+            resx                                = zeros( zspan, n ) - 1 ;
+            wpull                               = find( pos( :, 1 ) == -maxdisp ) ;
+            npull                               = length( wpull ) ;
             
             if npull > 0
-                lillist = zeros(1,2);
-                for ipull=1:npull
-                    wpull2 = find(bigresx(:,wpull(ipull)) ~= -1);
-                    npull2 = length(wpull2);
-                    thing = [bigresx(wpull2,wpull(ipull)),zeros(npull2,1)+uniqid(wpull(ipull))];
-                    lillist = [lillist;thing];
-                    
+                lillist = zeros( 1, 2 ) ;
+
+                for ipull = 1 : npull
+                    wpull2  = find( bigresx( :, wpull( ipull ) ) ~= -1 ) ;
+                    npull2  = length( wpull2 ) ;
+                    thing   = [ bigresx( wpull2, wpull( ipull ) ), zeros( npull2, 1 ) + uniqid( wpull( ipull ) ) ] ;
+                    lillist = [ lillist ; thing ] ;                    
                 end
-                olist = [[olist];[lillist(2:end,:)]];
+
+                olist = [ [ olist ] ; [ lillist( 2 : end, : ) ] ] ;
                 
             end
-
-            
     
-            wkeep = find(pos(:,1) >= 0);
-            nkeep = length(wkeep);
+            wkeep = find( pos( :, 1 ) >= 0 ) ;
+            nkeep = length( wkeep ) ;
+
             if nkeep == 0 
-                    'Were going to crash now, no particles....'
+                disp('Were going to crash now, no particles.')
             end
-            resx = resx(:,wkeep);
-            bigresx = bigresx(:,wkeep);
-            pos = pos(wkeep,:);
-            mem = mem(wkeep);
-            uniqid = uniqid(wkeep);
-            n = nkeep;
-            dumphash = zeros(nkeep,1);
+
+            resx        = resx( :, wkeep ) ;
+            bigresx     = bigresx( :, wkeep ) ;
+            pos         = pos( wkeep, : ) ;
+            mem         = mem( wkeep ) ;
+            uniqid      = uniqid( wkeep ) ;
+            n           = nkeep ;
+            dumphash    = zeros( nkeep, 1 ) ;
+
             if goodenough > 0
-                nvalid = nvalid(wkeep);
+                nvalid = nvalid( wkeep ) ;
             end
         end
     
     end
 
     if goodenough > 0 
-        nvalid = sum(bigresx >= 0 ,1);
-        wkeep = find(nvalid >= goodenough);
-        nkeep = length(wkeep);
+        nvalid  = sum( bigresx >= 0, 1) ;
+        wkeep   = find( nvalid >= goodenough ) ;
+        nkeep   = length( wkeep ) ;
+
         if nkeep == 0
-            for i=1:10
-            disp('You are not going any further, check your params and data')
-            end
-            disp('the code broke at line 1045')
+            disp('You are not going any further, check your params and data.')
             return
         end
+
         if nkeep < n
-            bigresx = bigresx(:,wkeep);
-            n = nkeep;
-            uniqid = uniqid(wkeep);
-            pos = pos(wkeep,:);
+            bigresx = bigresx( :, wkeep ) ;
+            n       = nkeep ;
+            uniqid  = uniqid( wkeep ) ;
+            pos     = pos( wkeep, : ) ;
         end
     end
 
+    wpull = find( pos( :, 1 ) ~= -2 * maxdisp ) ;
+    npull = length( wpull ) ;
 
-    wpull = find( pos(:,1) ~= -2*maxdisp);
-    npull = length(wpull);
     if npull > 0
-        lillist = zeros(1,2);
-        for ipull=1:npull
-            wpull2 = find(bigresx(:,wpull(ipull)) ~= -1);
-            npull2 = length(wpull2);   
-            thing = [bigresx(wpull2,wpull(ipull)),zeros(npull2,1)+uniqid(wpull(ipull))];
-            lillist = [lillist;thing];
+        lillist = zeros( 1, 2 ) ;
+
+        for ipull = 1 : npull
+            wpull2  = find( bigresx( :, wpull( ipull ) ) ~= -1 ) ;
+            npull2  = length( wpull2 ) ;
+            thing   = [ bigresx( wpull2, wpull( ipull ) ), zeros( npull2, 1 ) + uniqid( wpull( ipull ) ) ] ;
+            lillist = [ lillist ; thing ] ;
         end
-        olist = [olist;lillist(2:end,:)];
+
+        olist = [ olist ; lillist( 2 : end, : ) ] ;
     end
 
-    olist = olist(2:end,:);
-    %bigresx = 0;
-    %resx = 0;
-
-    nolist = length(olist(:,1));
-    res = zeros(nolist,dd+1);
-    for j=1:dd
-        res(:,j) = xyzs(olist(:,1),j);
-    end
-    res(:,dd+1) = olist(:,2);
-
-    % this is uberize included for simplicity of a single monolithic code
-
-    ndat=length(res(1,:));
-    newtracks=res;
-        
-
-    %u=unq(newtracks(:,ndat));
-
-    % inserting unq
-    indices = find(newtracks(:,ndat) ~= circshift(newtracks(:,ndat),-1));
-            count = length(indices);
-            if count > 0
-                u = indices;
-            else  
-                u = length(newtracks(:,ndat)) -1;
-            end
-
-
-    ntracks=length(u);
-    u=[0;u];
-    for i=2:ntracks+1
-        newtracks(u(i-1)+1:u(i),ndat) = i-1;
-    end
-
-    % end of uberize code
-
-    tracks = newtracks;
-
-
-
+    olist   = olist( 2 : end, : ) ;
+    nolist  = length( olist( :, 1 ) ) ;
+    res     = zeros( nolist, dd + 1 ) ;
     
+    for j = 1 : dd
+        res( :, j ) = xyzs( olist( :, 1 ), j ) ;
+    end
+
+    res( :, dd + 1 ) = olist( :, 2 ) ;
+
+    % This is uberize included for simplicity of a single monolithic code
+    ndat        = length( res( 1, : ) ) ;
+    newtracks   = res ;
+
+    % Inserting unq
+    indices = find( newtracks( :, ndat ) ~= circshift( newtracks( :, ndat ), -1 ) ) ;
+    count   = length(indices);
+
+    if count > 0
+        u = indices ;
+    else  
+        u = length( newtracks( :, ndat ) ) - 1 ;
+    end
+
+    ntracks = length( u ) ;
+    u       = [ 0 ; u ] ;
+
+    for i = 2 : ntracks + 1
+        newtracks( u( i - 1 ) + 1 : u( i ), ndat ) = i - 1 ;
+    end
+
+    % End of uberize code
+
+    tracks = newtracks ;
