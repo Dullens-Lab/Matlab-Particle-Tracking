@@ -162,7 +162,7 @@ This code 'track.pro' is copyright 1999, by John C. Crocker. It should be consid
 
 %}
 
-function tracks = track( xyzs, maxdisp, param )
+function [ tracks, indices ] = track( xyzs, maxdisp, param )
 
     % Determine the length of the feature vector (dimensionality)
     dd = length( xyzs( 1, : ) ) ;
@@ -202,7 +202,8 @@ function tracks = track( xyzs, maxdisp, param )
     end
 
     % Partitioning the data with unique times
-    indices = find( t ~= circshift( t, -1 ) ) ;
+    % indices = find( t ~= circshift( t, -1 ) ) ;
+    indices = find( diff( t ) ~= 0 ) ;
     count   = length( indices ) ;
     
     if count > 0
