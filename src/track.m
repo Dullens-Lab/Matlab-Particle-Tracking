@@ -183,27 +183,25 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
 
     % Check the input time vector
     t   = xyzs( :, dd ) ;
-    st  = circshift( t, 1 ) ;
-    st  = t( 2 : end ) - st( 2 : end ) ;
+    st  = diff( t ) ; 
     
-    if  sum( st( find( st < 0 ) ) ) ~= 0
-        disp( 'The time vectors is not in order' )
+    if any( st < 0 ) % if any value in st is negative
+        disp( 'The time vector is not in order' )
         return
     end
 
     % Initialize variables
-    w = find( st > 0 ) ;
-    z = length( w ) ;
-    z = z + 1 ;
+    w = find( st > 0 ) ; % Indices of frmae changes
+    z = length( w ) ; % Number of frame chanes
+    z = z + 1 ; % Number of frames
 
     if isempty( w )
         disp( 'All positions are at the same time... go back!' )
         return
     end
-
+ 
     % Partitioning the data with unique times
-    % indices = find( t ~= circshift( t, -1 ) ) ;
-    indices = find( diff( t ) ~= 0 ) ; % Index of frame changes
+    indices = find( st ~= 0 ) ; % Index of frame changes
     count   = length( indices ) ; % Number of frame changes ( ie frames - 1 )
 
     if count > 0 % More than one image
