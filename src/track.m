@@ -162,7 +162,7 @@ This code 'track.pro' is copyright 1999, by John C. Crocker. It should be consid
 
 %}
 
-function [ tracks, indices ] = track( xyzs, maxdisp, param )
+function [ tracks, vardump ] = track( xyzs, maxdisp, param )
 
     % Determine the length of the feature vector (dimensionality)
     dd = length( xyzs( 1, : ) ) ;
@@ -181,7 +181,7 @@ function [ tracks, indices ] = track( xyzs, maxdisp, param )
     end
 
 
-    % Check the input time vectorr
+    % Check the input time vector
     t   = xyzs( :, dd ) ;
     st  = circshift( t, 1 ) ;
     st  = t( 2 : end ) - st( 2 : end ) ;
@@ -203,12 +203,12 @@ function [ tracks, indices ] = track( xyzs, maxdisp, param )
 
     % Partitioning the data with unique times
     % indices = find( t ~= circshift( t, -1 ) ) ;
-    indices = find( diff( t ) ~= 0 ) ;
-    count   = length( indices ) ;
-    
-    if count > 0
+    indices = find( diff( t ) ~= 0 ) ; % Index of frame changes
+    count   = length( indices ) ; % Number of frame changes ( ie frames - 1 )
+
+    if count > 0 % More than one image
         res = indices ;
-    else  
+    else  % One image only so set res to number of particless - 1
         res = length( t ) - 1 ;
     end
     
