@@ -211,7 +211,7 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
     end
 
     % CHATGPT: Get the initial positions
-    res     = [ 1, res', length( t ) ] ; % Indices of frame changes prepended with 1 and appended with total centroids (all particles over all frames)
+    res     = [ 1, res', length( t ) ] ; % Indices of frame changes ( cumulative count of particles in each frame ) prepended with 1 and appended with total centroids (all particles over all frames)
     % Weird, res( 2 ) is always 1 after above so res( 2 ) - 1 + 1 !
     ngood   = res( 2 ) - res( 1 ) + 1 ; % Index of first frame change ( number of particles in first frame ) - 1 + 1
     eyes    = 1 : ngood ; % Array from 1 to number of particles in first frame
@@ -275,12 +275,12 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
     end
 
     % Main loop for tracking particles through frames
-    for i = istart : z
+    for i = istart : z % Loop over number of frames starting from frame 2
+        
         ispan   = mod( i - 1, zspan ) + 1 ;
         % Get the new particle positions.
-        m       = res( i + 1 ) - res( i ) ; % Number of particles in new frame
-        res( i ) ;
-        eyes    = 1 : m ;
+        m       = res( i + 1 ) - res( i ) ; % Number of particles in frame i
+        eyes    = 1 : m ; % Array of length number of particles in current frame
         eyes    = eyes + res( i ) ; % New possible unique particle IDs
         
         if m > 0
