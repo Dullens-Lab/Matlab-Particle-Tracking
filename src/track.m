@@ -191,8 +191,8 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
     end
 
     % Initialize variables
-    w = find( st > 0 ) ; % Indices of frmae changes
-    z = length( w ) ; % Number of frame chanes
+    w = find( st > 0 ) ; % Indices of frame changes
+    z = length( w ) ; % Number of frame changes
     z = z + 1 ; % Number of frames
 
     if isempty( w )
@@ -206,18 +206,20 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
 
     if count > 0 % More than one image
         res = indices ;
-    else  % One image only so set res to number of particless - 1
+    else  % One image only so set res to number of particless - 1. BUT we already return if isempty( w )
         res = length( t ) - 1 ;
     end
-    
-    % CHATGPT: Get the initial positions
-    res     = [ 1, res', length( t ) ] ;
-    ngood   = res( 2 ) - res( 1 ) + 1 ;
-    eyes    = 1 : ngood ; % Indices of the good data points.
-    pos     = xyzs( eyes, 1 : dim ) ;
-    istart  = 2 ; % Start from the second frame
-    n       = ngood ;
 
+    % CHATGPT: Get the initial positions
+    res     = [ 1, res', length( t ) ] ; % Indices of frame changes prepended with 1 and appended with total centroids (all particles over all frames)
+    % Weird, res( 2 ) is always 1 after above so res( 2 ) - 1 + 1 !
+    ngood   = res( 2 ) - res( 1 ) + 1 ; % Index of first frame change ( number of particles in first frame ) - 1 + 1
+    eyes    = 1 : ngood ; % Array from 1 to number of particles in first frame
+    pos     = xyzs( eyes, 1 : dim ) ; % Coordinates (XYZ) for all particles in first frame
+    istart  = 2 ; % Start from the second frame
+    n       = ngood ; % Number of particles in first frame
+
+    vardump=res;
     % Set initial parameters
     % I think this is the number of frames that are looked at in one batch
     % CHATGPT: Set the working copy time span based on the number of particles
@@ -230,26 +232,21 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
         zspan = 10;
     end
 
-    resx    = zeros( zspan, n ) - 1 ;
-
-    bigresx = zeros( z, n ) - 1 ;
-    mem     = zeros( n, 1 ) ;
-
-    uniqid  = 1 : n ; % Unique identifier for each particle
-    maxid   = n ;
+    resx    = zeros( zspan, n ) - 1 ; % Array of size zspan x Number of particles in first frame
+    bigresx = zeros( z, n ) - 1 ; % Array of siz Number of frames x Number of particles in first frame
+    mem     = zeros( n, 1 ) ; % Array of length Number of particles in first frame
+    uniqid  = 1 : n ; % Unique identifier for each particle in first frame
+    maxid   = n ; % Number of particles in first frame
     olist   = [ 0, 0 ] ;
 
     % If goodenough parameter is set, initialize additional variables
     if goodenough > 0 
-        dumphash    = zeros( n, 1 ) ;
-        nvalid      = ones( n, 1 ) ;
+        dumphash    = zeros( n, 1 ) ; % length Number of particles in first frame
+        nvalid      = ones( n, 1 ) ; % length Number of particles in first frame
     end
 
     resx( 1, : ) = eyes ;
-
-    % Set up constants
     maxdisq = maxdisp^2 ;
-
     notnsqrd = ( sqrt( n * ngood ) > 200 ) & ( dim < 7 ) ;
     notnsqrd = notnsqrd( 1 ) ;
 
@@ -293,7 +290,6 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
             % Trivial bond code begins   
             if notnsqrd
                 % Use raster metric code to do trivial bonds
-                
                 % Construct "s", a one dimensional parameterization of the space 
                 % which consists of the d-dimensional raster scan of the volume.
                 
@@ -320,9 +316,9 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
                 nblocks = coff ;
                 % Trim down the hypercube if it's too big to fit in the particle volume
                 % (i.e. if dimm( j ) < 3 )
-                
                 cub = cube ;
                 deg = find( dimm < 3 ) ;
+
                 if ~isempty( deg )
                     for j = 0 : length( deg ) - 1
                         cub = cub( find( cub( :, deg( j + 1 ) ) < dimm( deg( j + 1 ) ) ), : ) ;
@@ -332,6 +328,7 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
                 % Calculate the "s" coordinates of hypercube (with a corner @ the origin)
                 scube   = zeros( length( cub( :, 1 ) ), 1 ) ;
                 coff    = 1 ;
+
                 for j = 1 : dim
                     scube   = scube + cub( :, j ) .* coff ;
                     coff    = coff * dimm( j ) ;      
@@ -339,24 +336,23 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
                 
                 % Shift the hypercube "s" coordinates to be centered around the origin
                 coff = 1 ;
+
                 for j = 1 : dim
                     if dimm( j ) > 3
                         scube = scube - coff ;
                     end
                     coff = dimm( j ) .* coff ;
                 end
-                scube = mod( ( scube + nblocks ), nblocks ) ;
 
+                scube = mod( ( scube + nblocks ), nblocks ) ;
                 % Get the sorting for the particles by their "s" positions
                 [ ed, isort ] = sort( si ) ;
-                
                 % Make a hash table which will allow us to know which new particles
                 % are at a given si.
                 strt    = zeros( nblocks, 1 ) - 1 ;
                 fnsh    = zeros( nblocks, 1 ) ;
-
-                h   = find( si == 0 ) ;
-                lh  = length( h ) ;
+                h       = find( si == 0 ) ;
+                lh      = length( h ) ;
 
                 if lh > 0
                     si( h ) = 1 ;  
