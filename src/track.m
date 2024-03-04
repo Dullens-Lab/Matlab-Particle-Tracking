@@ -171,7 +171,7 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
     if nargin == 2
         memory_b    = 0 ;       % If memory is not needed set to zero
         goodenough  = 0 ;       % If goodenough is not wanted, set to zero
-        dim         = dd - 1 ;
+        dim         = dd - 1 ;  % Dimensions of centroids
         quiet       = 0 ;
     else
         memory_b    =   param.mem;
@@ -219,7 +219,6 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
     istart  = 2 ; % Start from the second frame
     n       = ngood ; % Number of particles in first frame
 
-    vardump=res;
     % Set initial parameters
     % I think this is the number of frames that are looked at in one batch
     % CHATGPT: Set the working copy time span based on the number of particles
@@ -245,9 +244,11 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
         nvalid      = ones( n, 1 ) ; % length Number of particles in first frame
     end
 
-    resx( 1, : ) = eyes ;
-    maxdisq = maxdisp^2 ;
-    notnsqrd = ( sqrt( n * ngood ) > 200 ) & ( dim < 7 ) ;
+    resx( 1, : ) = eyes ; % Populate first row of resx with array from 1 to number of particles in first frame
+    maxdisq = maxdisp ^2 ;
+    % This is bizarre, dim is always going to be less than 7 so notnsqrd is
+    % always going to be false
+    notnsqrd = ( sqrt( n * ngood ) > 100 ) & ( dim < 7 ) ; % sqrt( # of particles in first frame * # of particles in first frame ) !!!!
     notnsqrd = notnsqrd( 1 ) ;
 
     if notnsqrd
@@ -265,13 +266,17 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
         % Calculate a blocksize which may be greater than maxdisp, but which keeps nblocks reasonably small.  
         
         volume = 1 ;
+        % This seems to be trying to estimate the total volume any given
+        % particle explores over all frames, but minn and maxn return
+        % values that may belong to different particles depending on the
+        % centroid step prior to track.
         for d = 0 : dim - 1
-            minn    = min( xyzs( w, d + 1 ) ) ;
-            maxx    = max( xyzs( w, d + 1 ) ) ;
+            minn    = min( xyzs( w, d + 1 ) ) ; % xyzs( w, d + 1 ) is an array of the first found x coordinate from in each frame. So minn should be the minumum value for first found particle x seen in the entire data set.
+            maxx    = max( xyzs( w, d + 1 ) ) ; 
             volume  = volume * ( maxx - minn ) ;
         end
 
-        blocksize = max( [ maxdisp, ( ( volume ) / ( 20 * ngood ) )^( 1.0 / dim ) ] ) ;
+        blocksize = max( [ maxdisp, ( volume / 20 / ngood )^( 1.0 / dim ) ] ) ; % Probably maxdisp!
     end
 
     % Main loop for tracking particles through frames
@@ -283,29 +288,35 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
         eyes    = 1 : m ; % Array of length number of particles in current frame
         eyes    = eyes + res( i ) ; % New possible unique particle IDs
         
-        if m > 0
-            xyi     = xyzs( eyes, 1 : dim ) ;
-            found   = zeros( m, 1 ) ;
+        if m > 0 % if we have particles in current frame
+
+            xyi     = xyzs( eyes, 1 : dim ) ; % All centroids for current frame
+            found   = zeros( m, 1 ) ; 
+            
+            % ChatGPT: "Trivial bond" refers to a straightforward method of detecting bonds between particles based on their positions in two frames.
+            % The term "trivial" suggests that the bond detection algorithm used in the code is not complex or sophisticated but rather simple and easy to understand.
             
             % Trivial bond code begins   
-            if notnsqrd
+            if notnsqrd % If we have more than 200 particles in first frame
+
                 % Use raster metric code to do trivial bonds
                 % Construct "s", a one dimensional parameterization of the space 
                 % which consists of the d-dimensional raster scan of the volume.
                 
-                abi     = fix( xyi ./ blocksize ) ;
-                abpos   = fix( pos ./ blocksize ) ;
-                si      = zeros( m, 1 ) ;
-                spos    = zeros( n, 1 ) ;
+                abi     = fix( xyi ./ blocksize ) ; % All centroids for current frame floored
+                abpos   = fix( pos ./ blocksize ) ; % All centroids for first frame floored
+                vardump=pos ;
+                si      = zeros( m, 1 ) ; % Length number of particles in frame i
+                spos    = zeros( n, 1 ) ; % Length number of particles in first frame
                 dimm    = zeros( dim, 1 ) ;
                 coff    = 1. ;
                 
                 % Calculate a blocksize which may be greater than maxdisp, but which
                 % keeps nblocks reasonably small.
                 for j = 1 : dim
-                    minn            = min( [ abi( :, j ) ; abpos( :, j ) ] ) ;
-                    maxx            = max( [ abi( :, j ) ; abpos( :, j ) ] ) ;
-                    abi( :, j )     = abi( :, j ) - minn;
+                    minn            = min( [ abi( :, j ) ; abpos( :, j ) ] ) ; % min from current frame and first frame
+                    maxx            = max( [ abi( :, j ) ; abpos( :, j ) ] ) ; % max from current frame and first frame
+                    abi( :, j )     = abi( :, j ) - minn ;
                     abpos( :, j )   = abpos( :, j ) - minn ;
                     dimm( j )       = maxx - minn + 1 ;
                     si              = si + abi( :, j ) .* coff ;
@@ -377,6 +388,7 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
                 which1 = zeros( n, 1 ) ;
                 
                 for j = 1 : n
+
                     map         = fix( -1 ) ;
                     scub_spos   = scube + spos( j ) ;
                     s           = mod( scub_spos, nblocks ) ;
@@ -443,10 +455,9 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
                     nontrivial = 0 ;
                 end
 
-            else
+            else % If we have less than 200 particles in first frame
                 
                 % Use simple N^2 time routine to calculate trivial bonds
-
                 % Don't bother tracking perm. lost guys
                 wh      = find( pos( :, 1 ) >= 0 ) ;
                 ntrack  = length( wh ) ;
@@ -543,7 +554,6 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
                     nontrivial  = 0 ;
                 end
             end
-            
             % Trivial bond code ends
             
             if nontrivial
@@ -940,7 +950,7 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
             end
     
         else
-            disp(' Warning: No positions found for t=')
+            disp( ['Warning: No positions found for frame ', num2str( i ) ] )
         end
 
         w   = find( resx( ispan, : ) ~= - 1 ) ;
