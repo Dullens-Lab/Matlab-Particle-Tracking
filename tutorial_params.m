@@ -12,3 +12,5 @@ param.dim = 2 ;
 param.quiet = 0 ;
 
 maxdisp = 20 ;
+
+test
