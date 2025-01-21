@@ -1,10 +1,6 @@
-# Particle Tracking tailored for the Dullens Lab
+# Particle Tracking tailored for the Soft Matter Practical at the IMM
 
 Find positions within a microscope image or series of images of single or multiple colloids.
-
-If you want to get updates from this repo or if you want to contribute (recommended), ask to be added to the repo team and, 
-
-`git clone https://github.com/Dullens-Lab/Matlab-Particle-Tracking`
 
 ## Jump To
 
