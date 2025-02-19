@@ -53,6 +53,8 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img_in, hpass, lpass, backgr
     if hpass
         box_kernel  = - ones( 3 ) / 9 ; box_kernel( 2, 2 ) = 8 / 9 ;
         img_hpass   = conv2( img_out, box_kernel, 'same' ) ;
+        img_hpass(1, :) = 0 ; img_hpass(end, :) = 0 ; img_hpass(:, 1) = 0 ; img_hpass(:, end) = 0 ;
+
         img_hpass   = scale2init8( img_hpass ) ;
         img_out     = img_hpass ;
     end
@@ -101,7 +103,7 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img_in, hpass, lpass, backgr
 
     if display == true
 
-        fov = 36 ;
+        fov = 150 ;
         figure_img = figure ; colormap( figure_img, 'gray') ; figure_hists = figure ;
 
         img_hist = @( x )  hist( x, min( x, [], 'all' ) : max( x, [], 'all' ) ) ;
