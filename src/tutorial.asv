@@ -7,7 +7,7 @@
 
 clearvars ;
 
-addpath(genpath('../')) % Add all "Matlab Particle Tracking" directories
+addpath(genpath('../')) % Add all Matlab Particle Tracking sub directories
 
 tutorial_params % Load our paramameters
 
