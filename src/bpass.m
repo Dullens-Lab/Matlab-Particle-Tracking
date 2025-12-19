@@ -29,8 +29,8 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img_in, hpass, lpass, backgr
     % Convert to double 
     if isa( img_in, 'double' ) ~= 1, img_in = double( img_in ) ; end
 
-    normalize   = @( x ) x / sum( x ) ;
-    scale2init8 = @( x ) ( x - min( x, [], 'all' ) ) ./ max( ( x - min( x, [], 'all' ) ), [], 'all' ) * 255 ;
+    normalize   = @( x ) x ; %/ sum( x ) ;
+    scale2init8 = @( x )( x - min( x, [], 'all' ) ) ./ max( ( x - min( x, [], 'all' ) ), [], 'all' ) * 255 ;
     
     % NOTE: This can be problematic in the scenario where we have a group
     % of images but some images contain no objects. In this case we scale
@@ -53,6 +53,8 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img_in, hpass, lpass, backgr
     if hpass
         box_kernel  = - ones( 3 ) / 9 ; box_kernel( 2, 2 ) = 8 / 9 ;
         img_hpass   = conv2( img_out, box_kernel, 'same' ) ;
+        img_hpass(1, :) = 0 ; img_hpass(end, :) = 0 ; img_hpass(:, 1) = 0 ; img_hpass(:, end) = 0 ;
+
         img_hpass   = scale2init8( img_hpass ) ;
         img_out     = img_hpass ;
     end
@@ -100,7 +102,7 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img_in, hpass, lpass, backgr
 
     if display == true
 
-        fov = 36 ;
+        fov = 150 ;
         figure_img = figure ; colormap( figure_img, 'gray') ; figure_hists = figure ;
 
         img_hist = @( x )  hist( x, min( x, [], 'all' ) : max( x, [], 'all' ) ) ;

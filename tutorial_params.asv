@@ -2,8 +2,8 @@ COORD = struct ;
 particles   = [] ;
 pks         = [] ;
 
-pxum        = 8 ; % Microscope calibartion, pixels per micrometre [ /um ]
-pxum        = pxum / 1e-6 ; % pixels per metre [ /m ]
+pxum        = 7.25 ; % Microscope calibartion, pixels per micrometre [ /um ]
+pxum        = pxum * 1e-6 ; % pixels per metre [ /m ]
 
 excl_dia    = 25 ;  % Diameter, in pixels, where only one peak pixel will be recorded
 backgrnd    = 110 ; % Background threshold
