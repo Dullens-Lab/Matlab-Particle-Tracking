@@ -1,9 +1,9 @@
 %
 % Finds particle positions in an image to pixel level accuracy. The output here is expected to be passed to cntrd().
 %
-% After inits, first loops through all peak pixels and checks to see if it is the brightest in a 3 x 3 array (i.e. 8 nearest neighbours).
-% Then we exclude all peak pixels whos coordinates lie with the exclusion distance from the image edges.
-% Final step is to elimate all but the brightest pixel within the area given by excl_dia.
+% After inits, first loop through all peak pixels and checks to see if it is the brightest in a 3 x 3 array (i.e. 8 nearest neighbours).
+% Then exclude all peak pixels who's coordinates lie within the exclusion distance from the image edges.
+% Final step is to eliminate all but the brightest pixel within the area given by excl_dia.
 %
 %
 % est_pks = pkfnd( img, threshold, excl_dia )
@@ -17,54 +17,14 @@
 %               Small values will result in slower code execution but you might get some false particles.
 %   
 % excl_dia:     If your data's noisy, (e.g. a single particle has multiple local maxima), then set this optional 
-%               keyword to a value slightly larger than the diameter of your blob. If multiple peaks are found 
+%               keyword to a value slightly larger than the diameter of your particle. If multiple peaks are found 
 %               withing a radius of excl_dia/2 then the code will keep only the brightest. Also gets rid of all 
-%               peaks within excl_dia of image edge.
+%               peaks within excl_dia of the image edges.
 %
 % returns:      N x 2 array containing, coordinates of local maxima.
 %
 %               Typically, the return is the input for cntrd().
 %
-% Inspired by the lmx subroutine of Grier and Crocker's feature.pro
-%
-
-%{
-
-NOTES:
-
-When comparing px value with nearest 8 neigbours, the instinct may be to first gather the 8, find the max then compare once, i.e.
-
-    border_pixels = max( [ max( img( row - 1 : 2 : row + 1, range + col ) , [] , 'all' ), max( img( row, col - 1 : 2 : col + 1 ) ) ] ) ;
-    if img( row, col ) >= border_pixels
-
-but this is about 5 x slower than just directly comparing every pixel!
-
-CHANGELOG:
-
-Feb 4 2005
-Written by Eric R. Dufresne, Yale University.
-
-May 2005
-Got rid of ind2rc.m to reduce overhead on tip by Dan Blair. ERD
-Added sz keyword. ERD
-
-Jun 2005
-Modified to work with one and zero peaks, removed automatic normalization of image. ERD
-Due to popular demand, altered output to give x and y instead of row and column. ERD
-
-Aug 24 2005
-pkfnd now exits politely if there's nothing above threshold instead of crashing rudely. ERD
-
-Jun 14 2006 
-Now exits politely if no maxima found. ERD
-
-Oct 5 2006
-Fixed bug that threw away particles with maxima consisting of more than two adjacent points. ERD
-
-Jan 2023
-Reformated to meet commenting and nomenclecture standards. AC
-
-%}
 
 function [ est_pks, input_pk_pxs ] = pkfnd( img, th, excl_dia )
 
@@ -137,7 +97,7 @@ function [ est_pks, input_pk_pxs ] = pkfnd( img, th, excl_dia )
     pk_px_coords        = pk_px_coords( 1 : cnt - 1 , : ) ;
     [ pk_px_num, ~ ]    = size( pk_px_coords ) ;
 
-    % Elimate all but one peak within excl_dia
+    % Eliminate all but one peak within excl_dia
     if pk_px_num > 1
 
         pk_px_img = zeros( img_rows, img_cols ) ;
@@ -157,16 +117,8 @@ function [ est_pks, input_pk_pxs ] = pkfnd( img, th, excl_dia )
             cols    = pk_px_coords( n, 2 ) - excl_rad : pk_px_coords( n, 2 ) + excl_rad ;
             roi     = pk_px_img( rows, cols ) ;
 
-            % if sum( roi( :, 1 ) + roi( :, end ) + roi( 1, : )' + roi( end, : )', 'all' ) ~= 0 
-            %     disp('hello from pkfnd')
-            % end 
-
             [ roi_pk_px , roi_pk_px_ind ] = max( roi, [], 'all') ;
 
-            % Here we could ask if the found max is near the centre of the current roi and if not immediatley replace the roi over it.
-            % this would prevent ever repetition in the same area, like in the situation where there are enough pk_pxs
-            % with a particle such that the first roi only gets some of the pk_pxs and we later will have to repeat.
-            
             [ roi_pk_px_row, roi_pk_px_col ] = ind2sub( size( roi ), roi_pk_px_ind ) ;
             
             pk_px_img( rows, cols ) = 0 ;

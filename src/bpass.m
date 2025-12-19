@@ -15,7 +15,7 @@
 %
 %   `img_out` 2D array of filtered image pixel values.
 %
-%`img_hpass` and `img_lpass` can be returned with `[ img_out, img_hpass ] = bpass()` and `[ img_out, ~, img_lpass ] = bpass()`, respectively.
+%   `img_hpass` and `img_lpass` can be returned with `[ img_out, img_hpass ] = bpass()` and `[ img_out, ~, img_lpass ] = bpass()`, respectively.
 
 function [ img_out, img_hpass, img_lpass ] = bpass( img_in, hpass, lpass, backgrnd, display )
 
@@ -97,7 +97,6 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img_in, hpass, lpass, backgr
         img_base( img_base < backgrnd ) = 0 ; 
         img_out = img_base ;
     end
-
 
     if display == true
 

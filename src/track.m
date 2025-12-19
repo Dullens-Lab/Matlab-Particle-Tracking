@@ -1,38 +1,34 @@
+% Constructs n-dimensional trajectories from a scrambled list of particle coordinates determined at discrete times (e.g., in consecutive video frames).
 %
-% Constructs n-dimensional trajectories from a scrambled list of particle coordinates determined at discrete times (e.g. in consecutive video frames).
-%
-% TODO: Short describtion of this code
-%
-% result = track( positionlist, maxdisp, param )
+% result = track(positionlist, maxdisp, param)
 %
 % positionlist: An array listing the scrambled coordinates and data of the different particles at different times, such that:
-%               positionlist( 1 : d - 1, : ) contains the d coordinates and data for all the particles, at the different times. Must be positve.
-%               positionlist( d, : ) contains the time t that the position was determined, must be integers (e.g. frame number). These values must 
+%               positionlist(1 : d - 1, :) contains the d coordinates and data for all the particles, at the different times. Must be positive.
+%               positionlist(d, :) contains the time t that the position was determined, must be integers (e.g., frame number). These values must 
 %               be monotonically increasing and uniformly gridded in time.
 % 
-% maxdisp:      An estimate of the maximum distance that a particle would move in a single time interval.(see Restrictions)
+% maxdisp:      An estimate of the maximum distance that a particle would move in a single time interval. (see Restrictions)
 % 
-% param:        A structure containing a few tracking parameters that are needed for many applications.  If param is not included in the function call,
-%               then default values are used.  If you set one value make sure you set them all.
+% param:        A structure containing a few tracking parameters that are needed for many applications. If param is not included in the function call,
+%               then default values are used. If you set one value, make sure you set them all.
 % 
 %       param.mem:      This is the number of time steps that a particle can be 'lost' and then recovered again. If the particle reappears after this number of 
 %                       frames has elapsed, it will be tracked as a new particle. The default setting is zero. This is useful if particles occasionally 'drop out' of
 %                       the data.
 %        
-%       param.dim:      If the user would like to unscramble non-coordinate data for the particles (e.g. apparent radius of gyration for the particle images),
-%                       then positionlist should contain the position data in positionlist( 1 : param.dim, : ) and the extra data in positionlist( param.dim + 1 : dd, : ).
-%                       It is then necessary to set dim equal to the dimensionality of the coordinate data to so that the track knows to ignore the non-coordinate 
+%       param.dim:      If the user would like to unscramble non-coordinate data for the particles (e.g., apparent radius of gyration for the particle images),
+%                       then positionlist should contain the position data in positionlist(1 : param.dim, :) and the extra data in positionlist(param.dim + 1 : dd, :).
+%                       It is then necessary to set dim equal to the dimensionality of the coordinate data so that the track function knows to ignore the non-coordinate 
 %                       data in the construction of the trajectories. The default value is two.
 % 
 %       param.good:     Set this keyword to eliminate all trajectories with fewer than param.good valid positions. This is useful for eliminating very short, 
 %                       mostly 'lost' trajectories due to blinking 'noise' particles in the data stream.
 % 
-%       param.quiet:    Set this keyword to 1 if you don't want any text.
+%       param.quiet:    Set this keyword to 1 if you don't want any text output.
 %
-% 
-% returns:      A list containing the original data rows sorted into a series of trajectories. To the original input data structure there is appended an 
-%               additional column containing a unique 'id number' for each identified particle trajectory. The result array is sorted so rows with corresponding 
-%               id numbers are in contiguous blocks, with the time variable a monotonically increasing function inside each block. 
+% returns:      A list containing the original data rows sorted into a series of trajectories. To the original input data structure, an 
+%               additional column containing a unique 'id number' for each identified particle trajectory is appended. The result array is sorted so rows with corresponding 
+%               id numbers are in contiguous blocks, with the time variable being a monotonically increasing function inside each block. 
 %               For example:
 %
 %               For the input data structure (positionlist):
@@ -44,7 +40,7 @@
 %               15.9000     20.7000     2.00000
 %               6.20000     4.30000     2.00000
 % 
-%               with res = track( positionlist, 5, mem = 2 ), track will return,
+%               with res = track(positionlist, 5, mem = 2), track will return,
 % 
 %               (x)         (y)         (t)         (id)
 %               3.60000     5.00000     0.00000     0.00000
@@ -54,9 +50,9 @@
 %               15.9000     20.7000     2.00000     1.00000
 %
 %               NB: for t = 1 in the example above, one particle temporarily vanished. As a result, the trajectory id = 1 has one time missing, 
-%               i.e. particle loss can cause time gaps to occur in the corresponding trajectory list. In contrast:
+%               i.e., particle loss can cause time gaps to occur in the corresponding trajectory list. In contrast:
 %
-%               res = track( positionlist, 5 ) will return,
+%               res = track(positionlist, 5) will return,
 %
 %               (x)         (y)         (t)         (id)
 %               15.1000     22.6000     0.00000     0.00000
@@ -66,106 +62,31 @@
 %               15.9000     20.7000     2.00000     2.00000
 % 
 %               where the reappeared 'particle' will be labelled as new rather than as a continuation of an old particle since mem = 0.  
-%               It is up to the user to decide what setting of 'mem' will yeild the highest fidelity.
+%               It is up to the user to decide what setting of 'mem' will yield the highest fidelity.
 %
 % RESTRICTIONS:
 % 
-% maxdisp should be set to a value somewhat less than the mean spacing between the particles. As maxdisp approaches the mean spacing the runtime 
-% will increase significantly. The function will produce an error message: "Excessive Combinatorics!" if the run time would be too long, and the 
+% maxdisp should be set to a value somewhat less than the mean spacing between the particles. As maxdisp approaches the mean spacing, the runtime 
+% will increase significantly. The function will produce an error message: "Excessive Combinatorics!" if the runtime would be too long, and the 
 % user should respond by re-executing the function with a smaller value of maxdisp. Obviously, if the particles being tracked are frequently moving
 % as much as their mean separation in a single time step, this function will not return acceptable trajectories.
 % 
 % PROCEDURE:
 % 
-% Given the positions for n particles at time t( i ), and m possible new positions at time t( i + 1 ), this function considers all possible 
+% Given the positions for n particles at time t(i), and m possible new positions at time t(i + 1), this function considers all possible 
 % identifications of the n old positions with the m new positions, and chooses that identification which results in the minimal total squared displacement.
 % 
-% Those identifications which don't associate a new position within maxdisp of an old position ( particle loss ) penalize the total squared displacement 
+% Those identifications which don't associate a new position within maxdisp of an old position (particle loss) penalize the total squared displacement 
 % by maxdisp^2. For non-interacting Brownian particles with the same diffusivity, this algorithm will produce the most probable set of identifications 
-% ( provided maxdisp >> RMS displacement between frames ). In practice it works reasonably well for systems with oscillatory, ballistic, correlated and 
-% random hopping motion, so long as single time step displacements are reasonably small.  NB: multidimensional functionality is intended to facilitate 
-% tracking when additional information regarding target identity is available (e.g. size or color). At present, this information should be rescaled by the
+% (provided maxdisp >> RMS displacement between frames). In practice, it works reasonably well for systems with oscillatory, ballistic, correlated, and 
+% random hopping motion, so long as single time step displacements are reasonably small. NB: multidimensional functionality is intended to facilitate 
+% tracking when additional information regarding target identity is available (e.g., size or color). At present, this information should be rescaled by the
 % user to have a comparable or smaller (measurement) variance than the spatial displacements.
 
-%{
-
-CHANGELOG:
-
-Feb 1993
-Written by John C. Crocker, University of Chicago (JFI).
-
-July 1993
-Fixed bug causing particle loss and improved performance for large numbers of (>100) particles. JCC
-
-Nov 1993
-Improved speed and memory performance for large numbers of (>1000) particles (added subnetwork code). JCC
-
-Mar 1994
-Optimized run time for trivial bonds and d < 7. (Added d-dimensional raster metric code.) JCC
-
-Aug 1994
-Added functionality to unscramble non-position data along with position data. JCC
-
-Sept 1994
-Rewrote subnetwork code and wrote new, more efficient permutation code. JCC
-
-May 1995
-Debugged subnetwork and excessive combinatorics code. JCC
-
-Dec 1995
-Added memory keyword, and enabled the tracking of newly appeared particles. JCC
-
-Mar 1996
-Made inipos a keyword, and disabled the adding of 'new' particles when inipos was set. JCC
-
-Mar 1997
-Added 'add' keyword, since Chicago users didn't like having particle addition be the default. JCC
-
-Sept 1997
-Added 'goodenough' keyword to improve memory efficiency when using the 'add' keyword and to filter out bad tracks. JCC
-
-Oct 1997
-Streamlined data structure to speed runtime for > 200 timesteps. Changed 'quiet' keyword to 'verbose'. JCC
-
-Made time labelling more flexible (uniform and sorted is ok). JCC
-
-Sept 1998
-Switched trajectory data structure to a 'list' form, resolving memory issue for large, noisy datasets. JCC
-
-Feb 1999
-Added Eric Weeks's 'uberize' code to post-facto rationalize the particle id numbers, removed 'add' keyword. JCC
-
-Jan 2005 
-Transmuted to MATLAB by D. Blair
-
-May 2005
-Added the param structure to simplify calling. ERD
-
-Jun 05
-Added quiet to param structure. ERD
-
-Jul 2005
-Fixed slight bug in trivial bond code. DLB
-
-Mar 2007
-Fixed bug with max disp pointed out by Helene Delanoe-Ayari. DLB
-
-Nov 2023
-Reformated to meet commenting and nomenclecture standards. AC
-Changed indices = find( t ~= circshift( t, -1 ) ) to use find instead. Note the origanal method would always return n + 1 frame steps since the circshift means the last values are always different.
-Removed if count > 0 since we only get to this point if sum( dt ) ~= 0 and count = length ( find( dt ~= 0 ) )
-Replaced ngood   = res( 2 ) - res( 1 ) + 1 ; with ngood = indicies( 1 ) ;
-
-
-This code 'track.pro' is copyright 1999, by John C. Crocker. It should be considered 'freeware'- and may be distributed freely 
-(outside of the military-industrial complex) in its original form when properly attributed.
-
-%}
-
-function [ tracks, vardump ] = track( xyzs, maxdisp, param )
+function [ tracks, vardump ] = track(positionlist, maxdisp, param )
 
     % Determine the length of the feature vector (dimensionality)
-    dd = length( xyzs( 1, : ) ) ;
+    dd = length( positionlist( 1, : ) ) ; % Number of dimensions plus time column
 
     % Use default parameters if none given
     if nargin == 2
@@ -179,46 +100,41 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
         dim         =   param.dim;
         quiet       =   param.quiet;
     end
-
-
     % Check the input time vector
-    t   = xyzs( :, dd ) ;
-    st  = diff( t ) ; 
+    t   = positionlist( :, dd ) ;   % Time vector
+    st  = diff( t ) ;               % Time step vector
     
     if any( st < 0 ) % if any value in st is negative
-        disp( 'The time vector is not in order' )
+        disp( 'The time vector is not in order. Restructure you input centroids so that it is in order of which the images where taken.' )
         return
     end
-
     % Initialize variables
-    w = find( st > 0 ) ; % Indices of frame changes
-    z = length( w ) ; % Number of frame changes
-    z = z + 1 ; % Number of frames
+    w = find( st > 0 ) ;    % Indices of frame changes            % Number of frames
 
     if isempty( w )
-        disp( 'All positions are at the same time... go back!' )
+        disp( 'All positions are at the same time.' )
         return
     end
- 
+
+    z = length( w ) ;       % Number of frame changes
+    z = z + 1 ; 
+    
     % Partitioning the data with unique times
-    indices = find( st ~= 0 ) ; % Index of frame changes
-    count   = length( indices ) ; % Number of frame changes ( ie frames - 1 )
+    indices = find( st ~= 0 ) ;     % Index of frame changes
+    count   = length( indices ) ;   % Number of frame changes ( ie frames - 1 )
 
     if count > 0 % More than one image
         res = indices ;
-    else  % One image only so set res to number of particless - 1. BUT we already return if isempty( w )
+    else  % One image only so set res to number of particles - 1. BUT we already return if isempty( w )
         res = length( t ) - 1 ;
     end
-
     % CHATGPT: Get the initial positions
-    res     = [ 1, res', length( t ) ] ; % Indices of frame changes ( cumulative count of particles in each frame ) prepended with 1 and appended with total centroids (all particles over all frames)
-    % Weird, res( 2 ) is always 1 after above so res( 2 ) - 1 + 1 !
-    ngood   = res( 2 ) - res( 1 ) + 1 ; % Index of first frame change ( number of particles in first frame ) - 1 + 1
-    eyes    = 1 : ngood ; % Array from 1 to number of particles in first frame
-    pos     = xyzs( eyes, 1 : dim ) ; % Coordinates (XYZ) for all particles in first frame
-    istart  = 2 ; % Start from the second frame
-    n       = ngood ; % Number of particles in first frame
-
+    res     = [ 1, res', length( t ) ] ;    % Indices of frame changes ( cumulative count of particles in each frame ) prepended with 1 and appended with total centroids (all particles over all frames)
+    ngood   = res( 2 ) - res( 1 ) + 1 ;     % Index of first frame change ( number of particles in first frame ) - 1 + 1
+    eyes    = 1 : ngood ;                   % Array from 1 to number of particles in first frame
+    pos     = positionlist( eyes, 1 : dim ) ;       % Coordinates (XYZ) for all particles in first frame
+    istart  = 2 ;                           % Start from the second frame
+    n       = ngood ;                       % Number of particles in first frame
     % Set initial parameters
     % I think this is the number of frames that are looked at in one batch
     % CHATGPT: Set the working copy time span based on the number of particles
@@ -231,25 +147,24 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
         zspan = 10;
     end
 
-    resx    = zeros( zspan, n ) - 1 ; % Array of size zspan x Number of particles in first frame
-    bigresx = zeros( z, n ) - 1 ; % Array of siz Number of frames x Number of particles in first frame
-    mem     = zeros( n, 1 ) ; % Array of length Number of particles in first frame
-    uniqid  = 1 : n ; % Unique identifier for each particle in first frame
-    maxid   = n ; % Number of particles in first frame
+    resx    = zeros( zspan, n ) - 1 ;   % Array of size zspan x Number of particles in first frame
+    bigresx = zeros( z, n ) - 1 ;       % Array of size Number of frames x Number of particles in first frame
+    mem     = zeros( n, 1 ) ;           % Array of length Number of particles in first frame
+    uniqid  = 1 : n ;                   % Unique identifier for each particle in first frame
+    maxid   = n ;                       % Number of particles in first frame
     olist   = [ 0, 0 ] ;
 
     % If goodenough parameter is set, initialize additional variables
     if goodenough > 0 
-        dumphash    = zeros( n, 1 ) ; % length Number of particles in first frame
-        nvalid      = ones( n, 1 ) ; % length Number of particles in first frame
+        dumphash    = zeros( n, 1 ) ;   % length Number of particles in first frame
+        nvalid      = ones( n, 1 ) ;    % length Number of particles in first frame
     end
 
-    resx( 1, : ) = eyes ; % Populate first row of resx with array from 1 to number of particles in first frame
-    maxdisq = maxdisp ^2 ;
-    % This is bizarre, dim is always going to be less than 7 so notnsqrd is
-    % always going to be false
-    notnsqrd = ( sqrt( n * ngood ) > 100 ) & ( dim < 7 ) ; % sqrt( # of particles in first frame * # of particles in first frame ) !!!!
-    notnsqrd = notnsqrd( 1 ) ;
+    resx( 1, : )    = eyes ;   % Populate first row of resx with array from 1 to number of particles in first frame
+    maxdisq         = maxdisp ^2 ;
+    % This is bizarre, dim is always going to be less than 7...?
+    notnsqrd        = ( sqrt( n * ngood ) > 100 ) & ( dim < 7 ) ; % sqrt( # of particles in first frame * # of particles in first frame ) !!!!
+    notnsqrd        = notnsqrd( 1 ) ;
 
     if notnsqrd
         % Construct the vertices of a 3x3x3... d-dimensional hypercube
@@ -263,46 +178,34 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
             end
         end    
 
-        % Calculate a blocksize which may be greater than maxdisp, but which keeps nblocks reasonably small.  
-        
         volume = 1 ;
         % This seems to be trying to estimate the total volume any given
         % particle explores over all frames, but minn and maxn return
         % values that may belong to different particles depending on the
         % centroid step prior to track.
         for d = 0 : dim - 1
-            minn    = min( xyzs( w, d + 1 ) ) ; % xyzs( w, d + 1 ) is an array of the first found x coordinate from in each frame. So minn should be the minumum value for first found particle x seen in the entire data set.
-            maxx    = max( xyzs( w, d + 1 ) ) ; 
+            minn    = min( positionlist( w, d + 1 ) ) ; % positionlist( w, d + 1 ) is an array of the first found x coordinate from in each frame. So minn should be the minumum value for first found particle x seen in the entire data set.
+            maxx    = max( positionlist( w, d + 1 ) ) ; 
             volume  = volume * ( maxx - minn ) ;
         end
 
         blocksize = max( [ maxdisp, ( volume / 20 / ngood )^( 1.0 / dim ) ] ) ; % Probably maxdisp!
     end
 
-    % Main loop for tracking particles through frames
     for i = istart : z % Loop over number of frames starting from frame 2
         
         ispan   = mod( i - 1, zspan ) + 1 ;
-        % Get the new particle positions.
         m       = res( i + 1 ) - res( i ) ; % Number of particles in frame i
         eyes    = 1 : m ; % Array of length number of particles in current frame
         eyes    = eyes + res( i ) ; % New possible unique particle IDs
         
         if m > 0 % if we have particles in current frame
 
-            xyi     = xyzs( eyes, 1 : dim ) ; % All centroids for current frame
+            xyi     = positionlist( eyes, 1 : dim ) ; % All centroids for current frame
             found   = zeros( m, 1 ) ; 
             
-            % ChatGPT: "Trivial bond" refers to a straightforward method of detecting bonds between particles based on their positions in two frames.
-            % The term "trivial" suggests that the bond detection algorithm used in the code is not complex or sophisticated but rather simple and easy to understand.
-            
-            % Trivial bond code begins   
             if notnsqrd % If we have more than 200 particles in first frame
 
-                % Use raster metric code to do trivial bonds
-                % Construct "s", a one dimensional parameterization of the space 
-                % which consists of the d-dimensional raster scan of the volume.
-                
                 abi     = fix( xyi ./ blocksize ) ; % All centroids for current frame floored
                 abpos   = fix( pos ./ blocksize ) ; % All centroids for first frame floored
                 vardump=pos ;
@@ -311,8 +214,6 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
                 dimm    = zeros( dim, 1 ) ;
                 coff    = 1. ;
                 
-                % Calculate a blocksize which may be greater than maxdisp, but which
-                % keeps nblocks reasonably small.
                 for j = 1 : dim
                     minn            = min( [ abi( :, j ) ; abpos( :, j ) ] ) ; % min from current frame and first frame
                     maxx            = max( [ abi( :, j ) ; abpos( :, j ) ] ) ; % max from current frame and first frame
@@ -325,8 +226,6 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
                 end
                 
                 nblocks = coff ;
-                % Trim down the hypercube if it's too big to fit in the particle volume
-                % (i.e. if dimm( j ) < 3 )
                 cub = cube ;
                 deg = find( dimm < 3 ) ;
 
@@ -336,7 +235,6 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
                     end
                 end 
                 
-                % Calculate the "s" coordinates of hypercube (with a corner @ the origin)
                 scube   = zeros( length( cub( :, 1 ) ), 1 ) ;
                 coff    = 1 ;
 
@@ -918,7 +816,7 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
             nww = length( w ) ;
             
             if nww > 0 
-                pos( w, : ) = xyzs( resx( ispan, w ), 1 : dim ) ;
+                pos( w, : ) = positionlist( resx( ispan, w ), 1 : dim ) ;
                 
                 if goodenough > 0 
                     nvalid( w ) = nvalid( w ) + 1 ;
@@ -933,7 +831,7 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
                 newarr                      = zeros( zspan, nnew ) - 1 ;
                 resx                        = [ resx, newarr ] ;
                 resx( ispan, n + 1 : end )  = eyes( newguys ) ;
-                pos                         = [ [ pos ] ; [ xyzs( eyes( newguys ), 1 : dim ) ] ] ;
+                pos                         = [ [ pos ] ; [ positionlist( eyes( newguys ), 1 : dim ) ] ] ;
                 nmem                        = zeros( nnew, 1 ) ;
                 mem                         = [ mem ; nmem ] ;
                 nun                         = 1 : nnew ;
@@ -1089,7 +987,7 @@ function [ tracks, vardump ] = track( xyzs, maxdisp, param )
     res     = zeros( nolist, dd + 1 ) ;
     
     for j = 1 : dd
-        res( :, j ) = xyzs( olist( :, 1 ), j ) ;
+        res( :, j ) = positionlist( olist( :, 1 ), j ) ;
     end
 
     res( :, dd + 1 ) = olist( :, 2 ) ;

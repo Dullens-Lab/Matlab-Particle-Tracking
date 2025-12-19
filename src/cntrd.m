@@ -33,74 +33,6 @@
 % fractional parts of the resulting locations.
 %
 
-%{
-
-CHANGELOG:
-
-Feb 4 2005
-Written by Eric R. Dufresne, Yale University.
-
-May 2005
-Inputs diamter instead of radius.
-
-Jun 2005
-Added code from imdist/dist to make this stand alone. DB
-
-Increased frame of reject locations around edge to 1.5*excl_dia ERD
-
-By popular demand, 
-1. altered input to be formatted in x,y space instead of row, column space. ERD
-2. added forth column of output, rg^2. ERD
-
-Aug 2005
-Outputs had been shifted by [0.5,0.5] pixels.  No more! ERD
-
-Aug 24 2005
-Woops!  That last one was a red herring.  The real problem is the "ringing" from the output of bpass.
-I fixed bpass (see note), and no longer need this kludge. Also, made it quite nice if est_pks=[]; ERD
-
-Jun 2006
-Added size and brightness output ot interactive mode. Also fixed bug in calculation of rg^2. ERD
-
-Jun 2007
-Small corrections to documentation. JWM
-
-Jan 2023
-Reformated to meet commenting and nomenclecture standards. AC
-Removed interactive option. AC
-Changed excl_rad such that we consider n pixels from the given peak where 2n + 1 is the input excl_dia.
-Removed filtering image edges of peaks and this is already happening in pkfnd(). AC
-Changed radius of giration calc. I dont trust rg = ( sum( roi .* dst2, 'all' ) / norm ) ; since the applied mask influences
-the estimated radius.
-Changed the mask such that it is a pixellated circle of diameter = excl_dia rather than excl_dia - 1.
-Added option to include mask or not.
-
-Dec 2023
-Added ability to carry through frame number from calling function AC
-
-
-
-    % Create mask - window around trial location over which to calculate the centroid
-
-    % msk_range = ( - excl_rad : excl_rad ) .^2 ;
-    
-    % cent_px = excl_rad + 1 ;
-
-    % msk_inv = zeros( excl_dia ) ;
-    
-    % for i = 1 : excl_dia
-    %     msk_inv( i, : ) = sqrt( ( i - cent_px ) ^2 + msk_range ) ;
-    % end
-
-    % ind = find( msk_inv <= excl_rad ) ;
-
-    % msk_binary = zeros( excl_dia ) ;
-
-    % msk_binary( ind ) = 1.0 ;
-
-    % dst2 = msk_binary .* ( msk_inv .^2 ) ;
-
-%}
 function cntrds = cntrd( img, est_pks, excl_dia, apply_mask, frame )
 
     if isa( img, 'double' ) ~= 1, img = double( img ) ; end
@@ -146,9 +78,6 @@ function cntrds = cntrd( img, est_pks, excl_dia, apply_mask, frame )
         rows    = est_pks( n, 2 ) - excl_rad  : est_pks( n, 2 ) + excl_rad ;
         cols    = est_pks( n, 1 ) - excl_rad  : est_pks( n, 1 ) + excl_rad ;
         roi     = msk_binary .* img( rows, cols ) ;
-        % if sum( roi( :, 1 ) + roi( :, end ) + roi( 1, : )' + roi( end, : )', 'all' ) ~= 0 
-        %     disp('hello from cntrd')
-        % end
         tot_br  = sum( roi, 'all' ) ;
 
         cntrd_x = est_pks( n, 1 ) + sum( roi .* msk_ind_x, 'all' ) / tot_br - excl_rad ;
