@@ -5,12 +5,12 @@
 clearvars ; addpath(genpath('../')) % Add all "Matlab Particle Tracking" directories
 
 % Load paramameters, make sure and edit them to suite your data
-tutorial_params 
+params 
 
 for frame = 1 : 1200
     
     % Load current image
-    img_in = double( imread( [ '/Users/arrancurran/Documents/radboud/Teaching/Soft Matter Practical/Test Data/captured_images_2025-01-25_12-48-01/img_' num2str( frame ) '.tiff' ] ) ) ;
+    img_in = double( imread( [ 'DIRECTORY/img_' num2str( frame ) '.tiff' ] ) ) ;
     
     % Filter the image
     filtered_image = bpass( img_in, false, 120, false ) ;
@@ -25,22 +25,27 @@ for frame = 1 : 1200
     centroids = [ centroids ; cntrds ] ;
 end
 
-% Pass x, y, frame number to track()
-trajectories = track( centroids( :, [ 1 2 5 ] ), maxdisp, param ) ;
-
-trajectories_um = trajectories ;
-trajectories_um( :, [ 1 2 ] ) = trajectories_um( :, [ 1 2 ] ) / pxum ;
-
-[ msd_2d, msd_x, msd_y, tau, msd_count ] = calcMSD( trajectories_um, fps ) ;
-
 % Plot particle brightness vs size.
 figure ; plot( centroids(:,3), centroids(:,4), 'o')
 xlabel('Peak Brightness'); ylabel('Estimated Sizes');
+
+% Pass x, y, frame number to track()
+trajectories = track( centroids( :, [ 1 2 5 ] ), maxdisp, param ) ;
 
 % Plot X and Y
 figure ; plot( trajectories(:,1), trajectories(:,2), '.')
 xlabel('x (pixels)'); ylabel('y (pixels)');
 xlim([0 2592]); ylim([0 1944])
+
+% Check for Pixel Bias
+pixel_bias(trajectories)
+
+% Scale to um
+trajectories_um = trajectories ;
+trajectories_um( :, [ 1 2 ] ) = trajectories_um( :, [ 1 2 ] ) / pxum ;
+
+% Calculate MSDs
+[ msd_2d, msd_x, msd_y, tau, msd_count ] = calcMSD( trajectories_um, fps ) ;
 
 % Plot 2D, and 1D MSDs
 figure ; plot( tau, msd_2d, 'ko', tau, msd_x, 'ro', tau, msd_y, 'bo' )
