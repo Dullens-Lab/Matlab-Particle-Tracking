@@ -15,7 +15,7 @@ excl_dia    = 31 ;  % Diameter, in pixels, where only one peak pixel will be rec
 backgrnd    = 120 ; % Background threshold
 maxdisp     = 21 ;  % Estimated maximum displacement a colloid may undergoe between frames
 
-param.mem   = 2 ;  % Number of frames to keep a lost particle in the memoroy
+param.mem   = 2 ;  % Number of frames to keep a lost particle in the memory
 param.good  = 600 ; % At the end of track(), colloids with centroids < param.good are discarded 
 param.dim   = 2 ;
 param.quiet = 0 ;
