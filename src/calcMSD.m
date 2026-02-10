@@ -6,7 +6,7 @@
 % 
 %   `msd = calcMSD( Particle )`
 %   
-%   `Particle`: A matrix containing particle tracking data with four columns:
+%   `Particle`: An array containing particle tracking data with four columns:
 %       
 %       `x` — x-coordinate of the particle’s position.
 %       `y` — y-coordinate of the particle’s position.
@@ -35,7 +35,7 @@
 % 
 % 5. Plot the MSD against time lag (`tau`).
 
-function [msd, tau, msd_count] = calcMSD( Particle )
+function [msd_2d, msd_x, msd_y, tau, msd_count] = calcMSD( Particle, fps )
     
     % Length of trajectories
     lmax = max(Particle(:, 3));
@@ -43,7 +43,9 @@ function [msd, tau, msd_count] = calcMSD( Particle )
     % Array of all particle IDs
     IDs = unique(Particle(:, 4));
     
-    msd = zeros(lmax, 1);
+    msd_2d = zeros(lmax, 1);
+    msd_x = zeros(lmax, 1);
+    msd_y = zeros(lmax, 1);
     msd_count = zeros(lmax, 1);
     
     % Loop over each particle
@@ -58,6 +60,8 @@ function [msd, tau, msd_count] = calcMSD( Particle )
         % Loop over current particle
         for dt = 0:size(thisParticle, 1) - 1
             
+            % For dt = 0, valid_indices is the full array, subsequent dts,
+            % reduce the array size
             valid_indices = (1:size(thisParticle, 1) - dt)';
             
             t1 = valid_indices;
@@ -66,19 +70,25 @@ function [msd, tau, msd_count] = calcMSD( Particle )
             % Calculate real dt (in case of missing frame)
             realdt = thisParticle(t2, 3) - thisParticle(t1, 3);
             
-            % Calculate squared displacement
-            displacement = sum((thisParticle(t2, 1:2) - thisParticle(t1, 1:2)).^2, 2);
+            % Calculate squared dr
+            dr = sum((thisParticle(t2, 1:2) - thisParticle(t1, 1:2)).^2, 2);
+            dx = sum((thisParticle(t2, 1) - thisParticle(t1, 1)).^2, 2);
+            dy = sum((thisParticle(t2, 2) - thisParticle(t1, 2)).^2, 2);
             
             % Accumulate results
             for j = 1:length(realdt)
                 msd_count(realdt(j) + 1) = msd_count(realdt(j) + 1) + 1;
-                msd(realdt(j) + 1) = msd(realdt(j) + 1) + displacement(j);
+                msd_2d(realdt(j) + 1) = msd_2d(realdt(j) + 1) + dr(j);
+                msd_x(realdt(j) + 1) = msd_x(realdt(j) + 1) + dx(j);
+                msd_y(realdt(j) + 1) = msd_y(realdt(j) + 1) + dy(j);
             end
         end
     end
     
-    msd = msd ./ msd_count;
-    tau = 1:lmax;
+    msd_2d = msd_2d ./ msd_count;
+    msd_x = msd_x ./ msd_count;
+    msd_y = msd_y ./ msd_count;
+    tau = (1 : lmax ) / fps ;
 
 end
 

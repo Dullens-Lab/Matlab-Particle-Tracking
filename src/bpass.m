@@ -17,9 +17,11 @@
 %
 %   `img_hpass` and `img_lpass` can be returned with `[ img_out, img_hpass ] = bpass()` and `[ img_out, ~, img_lpass ] = bpass()`, respectively.
 
-function [ img_out, img_hpass, img_lpass ] = bpass( img_in, hpass, lpass, backgrnd, display )
+function img_out = bpass( img_in, lpass, backgrnd, display )
+    
+    sub_plots = 2 ;
 
-    if nargin < 4
+    if nargin < 3
         warning('No image filtering performed. Not enough arguments provided in bpass( img, hpass, lpass, backgrnd, display )')
         img_out = img_in ;
         return
@@ -29,8 +31,8 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img_in, hpass, lpass, backgr
     % Convert to double 
     if isa( img_in, 'double' ) ~= 1, img_in = double( img_in ) ; end
 
-    normalize   = @( x ) x ; %/ sum( x ) ;
-    scale2init8 = @( x )( x - min( x, [], 'all' ) ) ./ max( ( x - min( x, [], 'all' ) ), [], 'all' ) * 255 ;
+    normalize   = @( x ) x / sum( x ) ;
+    scale2init8 = @( x ) x ; %( x - min( x, [], 'all' ) ) ./ max( ( x - min( x, [], 'all' ) ), [], 'all' ) * 255 ;
     
     % NOTE: This can be problematic in the scenario where we have a group
     % of images but some images contain no objects. In this case we scale
@@ -39,26 +41,6 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img_in, hpass, lpass, backgr
     img_in      = scale2init8( img_in ) ;
     img_out     = img_in ;
     
-    %%%     High Pass Filter    %%%
-    
-    % The kernel is designed to increase the brightness of the center pixel relative to neighboring pixels.
-    % The kernel array usually contains a single positive value at its center, which is completely surrounded by negative values.
-    % The following array is an example of a 3 by 3 kernel for a high pass filter:
-    %
-    %   -1/9    -1/9    -1/9
-    %   -1/9     8/9    -1/9
-    %   -1/9    -1/9    -1/9
-    %
-    % https://www.l3harrisgeospatial.com/docs/highpassfilter.html
-    if hpass
-        box_kernel  = - ones( 3 ) / 9 ; box_kernel( 2, 2 ) = 8 / 9 ;
-        img_hpass   = conv2( img_out, box_kernel, 'same' ) ;
-        img_hpass(1, :) = 0 ; img_hpass(end, :) = 0 ; img_hpass(:, 1) = 0 ; img_hpass(:, end) = 0 ;
-
-        img_hpass   = scale2init8( img_hpass ) ;
-        img_out     = img_hpass ;
-    end
-
     %%%     Low Pass Filter    %%%
     %
     % The kernel is designed to blur groups of pixels based on lpass. If an integer is not provided, it is estimated.
@@ -90,51 +72,71 @@ function [ img_out, img_hpass, img_lpass ] = bpass( img_in, hpass, lpass, backgr
             img_out      = img_lpass ;
         end
         
+        sub_plots = 3 ;
+
     end
 
     %%%     Zero Background Pixels    %%%
 
     if backgrnd
         img_base = img_out ;
-        img_base( img_base < backgrnd ) = 0 ; 
+        img_base( img_base < backgrnd ) = 0 ;
+        img_base = scale2init8( img_base ) ;
         img_out = img_base ;
     end
 
     if display == true
 
-        fov = 150 ;
-        figure_img = figure ; colormap( figure_img, 'gray') ; figure_hists = figure ;
+        fov = 512 ;
+        figure_img = figure ; colormap( figure_img, 'gray') ; axis equal ; figure_hists = figure ;
+        make_square = @(ax) set(ax, 'DataAspectRatio',[1 1 1], ...   % square pixels
+                           'PlotBoxAspectRatio',[1 1 1]);    % square axes box
 
         img_hist = @( x )  hist( x, min( x, [], 'all' ) : max( x, [], 'all' ) ) ;
+        
+        axh = axes('Parent', figure_hists);  % histogram axes
+        hold(axh,'on')
+        set(axh, 'YScale', 'log');
+        set(axh, 'Box','on', ...
+                 'TickDir','in', ...
+                 'XMinorTick','on', ...
+                 'YMinorTick','on');
+        
+        axh.XRuler.TickLabelGapOffset = 0;  % harmless; keeps layout sane
+        axh.YRuler.TickLabelGapOffset = 0;
+        
+        h = gobjects(0);   % line handles
+
 
         [ hist_raw, x_hist ] = img_hist( img_in ) ;
-        figure_hists ; semilogy1_raw = semilogy( x_hist, sum( hist_raw, 2 ), 'ko' ) ;
-        set(semilogy1_raw, 'DisplayName', 'Raw' ) ;
-        hold on
-        display_raw = subplot( 2, 2, 1, 'Parent', figure_img ) ; image( img_in( 1 : fov, 1 : fov ), 'Parent', display_raw) ;
-        title( display_raw, 'Raw Image' ) ; set( display_raw, 'YTickLabel', [ ] ) ; set( display_raw, 'XTickLabel', [ ] ) ;
+        h(end+1) = semilogy(axh, x_hist, sum(hist_raw,2), 'ko',...
+            'DisplayName','Input Image', 'MarkerFaceColor','k');
 
-        if hpass
-            [ hist_box, x_hist ] = img_hist( img_hpass ) ;
-            figure_hists ; semilogy1_box = semilogy( x_hist, sum( hist_box, 2 ), 'bo' ) ;
-            set(semilogy1_box, 'DisplayName', 'Boxcar', 'MarkerFaceColor', 'b' ) ;
-            display_box = subplot( 2, 2, 2, 'Parent', figure_img ) ; imagesc( img_hpass( 1 : fov, 1 : fov ), 'Parent', display_box) ;
-            title( display_box, 'Boxcar Filtered Image' ) ;set( display_box, 'YTickLabel', [ ] ) ; set( display_box, 'XTickLabel', [ ] ) ;
-        end
+        display_raw = subplot( 1, sub_plots, 1, 'Parent', figure_img ) ; image( img_in( 1 : fov, 1 : fov ), 'Parent', display_raw) ; make_square(display_raw) ;
+        title( display_raw, 'Raw Image' ) ; set( display_raw, 'YTickLabel', [ ] ) ; set( display_raw, 'XTickLabel', [ ] ) ;
 
         if exist( 'img_lpass', 'var' )
             [ hist_g, x_hist ] = img_hist( img_lpass ) ;
-            figure_hists ; semilogy1_g = semilogy( x_hist, sum( hist_g, 2 ), 'ro' ) ;
-            set( semilogy1_g, 'DisplayName', 'lpassian', 'MarkerFaceColor', 'r' ) ;
-            display_lpass = subplot( 2, 2, 3, 'Parent', figure_img ) ; image( img_lpass( 1 : fov, 1 : fov ), 'Parent', display_lpass) ;
-            title( display_lpass, 'gaussian Filtered Image' ) ;set( display_lpass, 'YTickLabel', [ ] ) ; set( display_lpass, 'XTickLabel', [ ] ) ;
+            h(end+1) = semilogy(axh, x_hist, sum( hist_g, 2 ), 'ro',...
+                        'DisplayName','Gaussian (Low Pass)', 'MarkerFaceColor','r');
 
+            display_lpass = subplot( 1, sub_plots, 2, 'Parent', figure_img ) ; image( img_lpass( 1 : fov, 1 : fov ), 'Parent', display_lpass) ; make_square(display_lpass) ;
+            title( display_lpass, 'Gaussian (Low Pass) Filtered Image' ) ;set( display_lpass, 'YTickLabel', [ ] ) ; set( display_lpass, 'XTickLabel', [ ] ) ;
         end
 
         [ hist_f, x_hist ] = img_hist( img_out ) ;
-        figure_hists ; semilogy1_f = semilogy( x_hist, sum( hist_f, 2 ), 'go' ) ;
-        set(semilogy1_f, 'DisplayName', 'Output' ) ;
-        display_out = subplot( 2, 2, 4, 'Parent', figure_img ) ; image( img_out( 1 : fov, 1 : fov ), 'Parent', display_out) ;
+        h(end+1) = semilogy(axh, x_hist, sum(hist_f,2), 'go',...
+            'DisplayName','Output', 'MarkerFaceColor','g');
+
+        xlabel('Pixel Value', 'Interpreter', 'latex')
+        ylabel('Pixel Count', 'Interpreter', 'latex')
+        legend(axh, h, 'Location','best');
+
+        display_out = subplot( 1, sub_plots, sub_plots, 'Parent', figure_img ) ; image( img_out( 1 : fov, 1 : fov ), 'Parent', display_out) ; make_square(display_out) ;
         title( display_out, 'Output Image' ) ;set( display_out, 'YTickLabel', [ ] ) ; set( display_out, 'XTickLabel', [ ] ) ;
+        
+        hold(axh,'off')
 
     end
+
+    img_out = uint8(img_out);

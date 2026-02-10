@@ -1,24 +1,25 @@
 
-COORD = struct ;
-i = 1 ;
+particles = []
 
-% Load a single image into the Matlab workspace
-image_raw =  imread(' ') ;
+parfor i = 1 : 1200
 
-% Processed the image using a bpass filter.
-filtered_image = bpass( image_raw, true, true, 0, false) ;
+    % Load a single image into the Matlab workspace
+    image_raw =  imread(sprintf('/Users/arrancurran/Documents/radboud/Teaching/Soft Matter Practical/Test Data/captured_images_2025-01-25_12-48-01/img_%d.tiff', i) ) ;
+    
+    % Processed the image using a bpass filter.
+    filtered_image = bpass( image_raw, false, true, 140, false) ;
+    
+    % Display the filtered image
+    % imshow( filtered_image )
+    
+    % Colloid positions, estimated to the nearest pixel
+    est_pks = pkfnd( filtered_image, 140, 15) ;
+    
+    % Find the sub-pixel coordinates for the colloid using a centre-of-mass algorithm.
+    cntrds = cntrd( filtered_image, est_pks, 15, true, i ) ;
+    
+    particles = [ particles ; cntrds ] ;
 
-% Display the filtered image
-imshow( filtered_image )
-
-% Colloid positions, estimated to the nearest pixel
-est_pks = pkfnd( filtered_image, 10, 3 ) ;
-
-% Find the sub-pixel coordinates for the colloid using a centre-of-mass algorithm.
-cntrds = cntrd( filtered_image, est_pks, 5, true, 1 ) ;
-
-% Append frame number to the coordinates.
-cntrds = [ cntrds i * ones( size( cntrds, 1 ), 1 ) ] ;
-
-% Store the centroids in a structure.
-COORD( i ).cntrds = cntrds ;
+end
+   
+    

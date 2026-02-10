@@ -1,55 +1,108 @@
 %
-% Particle Tracking Tutorial
-%
-% Origanal: https://site.physics.georgetown.edu/matlab/tutorial.html
-%
+% Particle Tracking Template
 %
 
-clearvars ;
+clearvars ; addpath(genpath('../')) % Add all "Matlab Particle Tracking" directories
 
-addpath(genpath('../')) % Add all Matlab Particle Tracking sub directories
-
-tutorial_params % Load our paramameters
+% Load paramameters, make sure and edit them to suite your data
+tutorial_params 
 
 parfor frame = 1 : 1200
     
     % Load current image
-    image_array = double( imread( [ 'tests/demo_data/' num2str( frame ) '.tiff' ] ) ) ;
+    img_in = double( imread( [ '/Users/arrancurran/Documents/radboud/Teaching/Soft Matter Practical/Test Data/captured_images_2025-01-25_12-48-01/img_' num2str( frame ) '.tiff' ] ) ) ;
     
     % Filter the image
-    filtered_image = bpass( image_array, false, true, backgrnd, false ) ;
+    filtered_image = bpass( img_in, false, 120, false ) ;
     
     % Find the peak pixels
-    est_pks = pkfnd( filtered_image, backgrnd, excl_dia ) ;
-    pks = [ pks ; est_pks ] ;
+    est_pks = pkfnd( filtered_image, 120, 31 ) ;
     
     % Calculate the sub pixel centroids
-    cntrds = cntrd( filtered_image, est_pks, excl_dia, true, frame ) ;
+    cntrds = cntrd( filtered_image, est_pks, 31, true, frame ) ;
     
     % Collect the result
-    particles = [ particles ; cntrds ] ;
-    COORD( frame ).cntrds = cntrds ;
-
+    centroids = [ centroids ; cntrds ] ;
 end
 
-tracks = track( particles( :, [ 1 2 5 ] ), maxdisp, param ) ;
+% Pass x, y, frame number to track()
+trajectories = track( centroids( :, [ 1 2 5 ] ), maxdisp, param ) ;
 
-tracks( :, [ 1 2 ] ) = tracks( :, [ 1 2 ] ) / pxum ;
+% Find stuck particles based on their trajectories
+[stuckIDs, scores] = find_stuck_particlest(trajectories);
 
-[ msd, tau, msd_count ] = calcMSD( tracks ) ;
+
+figure;
+hold on;
+
+for k = 1:numel(stuckIDs)
+    thisID = stuckIDs(k);
+
+    mask = trajectories(:,4) == thisID;
+
+    x = trajectories(mask,1);
+    y = trajectories(mask,2);
+    t = trajectories(mask,3);
+
+    % sort by time in case rows are not ordered
+    [~, idx] = sort(t);
+    x = x(idx);
+    y = y(idx);
+
+    plot(x, y, 'o') ;
+end
+
+axis equal;
+xlabel('x');
+ylabel('y');
+xlim([0 2592]); ylim([0 1944])
+title('Trajectories of stuck particles');
+hold off;
+
+
+
+
+% Make sure IDs are comparable (often safest if they're integers)
+ids = trajectories(:,4);
+
+% Keep rows whose id is NOT in stuckIDs
+keepMask = ~ismember(ids, stuckIDs);
+
+trajectories_clean = trajectories(keepMask, :);
+
+traj_zeroed = zero_trajectories(trajectories_clean);
+
+traj_mean = mean_trajectories(traj_zeroed) ;
+
+plot(traj_mean(:,3),traj_mean(:,2),'o')
+
+% If you have drift in
+
+m_x = -0.7362;
+m_y = 0.1055 ;
+
+
+traj_corr = remove_drift(trajectories_clean, m_x,m_y);
+
+traj_corr_um = traj_corr ;
+traj_corr_um( :, [ 1 2 ] ) = traj_corr_um( :, [ 1 2 ] ) / pxum ;
+
+trajectories_um = trajectories ;
+trajectories_um( :, [ 1 2 ] ) = trajectories_um( :, [ 1 2 ] ) / pxum ;
+
+[ msd_2d, msd_x, msd_y, tau, msd_count ] = calcMSD( traj_corr_um, fps ) ;
 
 % Plot particle brightness vs size.
-figure ; plot( particles(:,4), particles(:,3), 'o')
-xlabel('Estimated Sizes');
-ylabel('Peak Brightness');
+figure ; plot( centroids(:,3), centroids(:,4), 'o')
+xlabel('Peak Brightness'); ylabel('Estimated Sizes');
 
 % Plot X nad Y
-figure ; plot(tracks(:,1),tracks(:,2),'.')
-xlabel('x (\mum)');
-ylabel('y (\mum)');
+figure ; plot( traj_corr_um(:,1), traj_corr_um(:,2), '.')
+xlabel('x (\mum)'); ylabel('y (\mum)');
 
-figure ; plot( tau, msd, 'o' )
-xlabel('Lag time, \tau, (s)');
-ylabel('\langle \Deltar( \tau )^2 \rangle (m^2)');
+figure ; plot( tau, msd_2d, 'ko', tau, msd_x, 'ro', tau, msd_y, 'bo' )
+xlabel('Lag time, \tau, (s)'); ylabel('\langle \Deltar( \tau )^2 \rangle (m^2)');
 
-D_t = (1.38e-23 * 298) / (6 * pi * 1.0e-3 * 5e-7 ) ;
+D_T = (k_B * T) / (6 * pi * eta * a ) ;
+
+D_m = MSD_m / 4 ;
