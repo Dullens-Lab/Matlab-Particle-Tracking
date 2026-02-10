@@ -1,3 +1,4 @@
 tests/data*
 tests/demo_data
 *.tif*
+*.asv
