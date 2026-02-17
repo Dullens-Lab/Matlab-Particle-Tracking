@@ -10,7 +10,7 @@ params
 for frame = 1 : 1200
     
     % Load current image
-    img_in = double( imread( [ 'DIRECTORY/img_' num2str( frame ) '.tiff' ] ) ) ;
+    img_in = double( imread( [ 'Test Data/captured_images_2025-01-25_12-48-01/img_' num2str( frame ) '.tiff' ] ) ) ;
     
     % Filter the image
     filtered_image = bpass( img_in, false, 120, false ) ;

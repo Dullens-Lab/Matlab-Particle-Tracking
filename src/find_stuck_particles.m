@@ -1,23 +1,22 @@
+
 function [trajectories_free, stuckIDs ] = find_stuck_particles(trajectories, minPoints, rMax)
-    % stuckIDs = find_stuck_particles(trajectories, minPoints, rMax)
-    %
-    % trajectories: (N x 4) [x y t id]
-    % Returns IDs whose net displacement (first->last) is <= rMax.
-    %
-    % minPoints: minimum detections required per ID (default 20)
-    % rMax:      max net displacement to be considered stuck (default 50) [same units as x,y]
+    % trajectories: [ x y t id ]
+    % minPoints:    minimum detections required per ID (default 100)
+    % rMax:         max variance to be considered stuck [same units as x,y]
     
-    if nargin < 2 || isempty(minPoints), minPoints = 100; end
-    if nargin < 3 || isempty(rMax),      rMax      = 50; end
+    if nargin < 2 || isempty( minPoints ), minPoints = 100; end
+    if nargin < 3 || isempty( rMax ),      rMax      = 50; end
     
-    x  = trajectories(:,1);
-    y  = trajectories(:,2);
-    t  = trajectories(:,3);
-    id = trajectories(:,4);
+    % Seperate into x, y, t, id for easier handling
+    x  = trajectories( :, 1 ) ; y  = trajectories( :, 2 ) ; t  = trajectories( :, 3 ) ; id = trajectories( :, 4 ) ;
     
-    ids = unique(id);
-    stuck = false(size(ids));
+    % Get the unique particle IDs
+    ids = unique( id ) ;
+    % Initialise a boolean array to keep track of which IDs are stuck
+    stuck = false( size( ids ) ) ;
     
+    % Loop over each unique ID and calculate the radius of gyration for its trajectory, x and y separately. If the minimum of the two is below the threshold, we consider the particle to be stuck.
+
     for j = 1:numel(ids)
         m = (id == ids(j));
         if nnz(m) < minPoints, continue; end
@@ -25,12 +24,16 @@ function [trajectories_free, stuckIDs ] = find_stuck_particles(trajectories, min
         tj = t(m);
         xj = x(m);
         yj = y(m);
-    
-        [~, i1] = min(tj);
-        [~, i2] = max(tj);
-    
-        dR = [xj(i2)-xj(i1), yj(i2)-yj(i1)];
-        stuck(j) = (hypot(dR(1), dR(2)) <= rMax);
+
+        % Center of mass of the trajectory
+        x_cm = mean( xj ) ;
+        y_cm = mean( yj ) ;
+
+        % Radius of Gyration in 1D for x and y separately
+        Xg = sqrt( mean( ( xj - x_cm ).^2 ) ) ;
+        Yg = sqrt( mean( ( yj - y_cm ).^2 ) ) ;
+
+        stuck(j) = min( [Xg Yg] ) <= rMax;
     end
     
     stuckIDs = ids(stuck);
@@ -64,7 +67,3 @@ function [trajectories_free, stuckIDs ] = find_stuck_particles(trajectories, min
     xlim([0 2592]); ylim([0 1944])
     title('Trajectories of stuck particles');
     hold off;
-
-
-
-end

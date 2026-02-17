@@ -10,7 +10,9 @@ function traj_mean = mean_trajectories( traj_zeroed )
     x_mean = zeros(size(tvals));
     y_mean = zeros(size(tvals));
     
+    % Loop over all frames
     for k = 1:numel(tvals)
+        % Get all indicies with the same t
         mask = (t == tvals(k));
         x_mean(k) = mean(x(mask), 'omitnan');
         y_mean(k) = mean(y(mask), 'omitnan');
