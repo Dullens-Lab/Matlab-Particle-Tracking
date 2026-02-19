@@ -7,7 +7,7 @@ clearvars ; addpath(genpath('../')) % Add all "Matlab Particle Tracking" directo
 % Load paramameters, make sure and edit them to suite your data
 params 
 
-for frame = 1 : 1200
+parfor frame = 1 : 1200
     
     % Load current image
     img_in = double( imread( [ 'Test Data/captured_images_2025-01-25_12-48-01/img_' num2str( frame ) '.tiff' ] ) ) ;
@@ -53,7 +53,7 @@ xlabel('Lag time, \tau, (s)'); ylabel('\langle \Deltar( \tau )^2 \rangle (m^2)')
 
 D_T = (k_B * T) / (6 * pi * eta * a ) ;
 
-D_m = MSD_m / 2 ;
+% D_m = MSD_m / 2 ;
 
 
 % Find stuck particles based on their trajectories
